@@ -37,3 +37,21 @@ Download de zip file vanaf: https://drive.google.com/file/d/1aui_UKMYdRdJy07oZ7-
 Extraheer de zip file en rechtmuis klik op de nieuwedatabank, 
 
 ![afbeelding](https://user-images.githubusercontent.com/28403026/226174489-a954e0bf-0a93-48a7-9697-591109b151a1.png)
+
+## data beschrijving
+
+### functies
+
+Er zijn bepaalde functies beschikbaar. Ze kunnen opgeroepen  worden zoals rechts weergegeven in onderstaande figuur. 
+
+![afbeelding](https://user-images.githubusercontent.com/28403026/226182694-e82992be-d7fe-48cf-8b6c-2a7756717708.png)
+
+- beschikbaarheden(series_id): Dit zijn de beschikbaarheden, die berekent wordt door postgresql. seires_id is de id van measurements series.
+- is_nan(): Niet van toepaasing hier, kijkt als iets nan is. gebruikt door andere functies.
+- not_outliers(series_id): Geeft de datapunten terug van de series_id die geen outliers zijn! gebruikt de normaal verdeelde curve. Geeft dus alle data terug tussen gemiddelde -+ standaard_afwijking*2 ligt => ongeveer 99.97% van de data.
+- not_outliers(series_id, multiplier INT): Hetzelfde als not_outliers(series_id), maar met optie om een INT (0,1,2,...) te geven om de formule te aan te passen. gemiddelde -+ standaard_afwijking*?.
+- not_outliers(series_id, multiplier float): Hetzelfde als not_outliers(series_id), maar met optie om een Float (bijvoorbeeld 0.5) te geven om de formule te aan te passen. gemiddelde -+ standaard_afwijking*?.
+- outliers(series_id): Geeft de datapunten terug van de series_id die outliers zijn! gebruikt de normaal verdeelde curve. Geeft dus alle data terug die niet tussen gemiddelde -+ standaard_afwijking*2 ligt => ongeveer 99.97% van de data.
+- outliers(series_id, multiplier INT): Hetzelfde als outliers(series_id), maar met optie om een INT (0,1,2,...) te geven om de formule te aan te passen. gemiddelde -+ standaard_afwijking*?.
+- outliers(series_id, multiplier float): Hetzelfde als outliers(series_id), maar met optie om een Float (bijvoorbeeld 0.5) te geven om de formule te aan te passen. gemiddelde -+ standaard_afwijking*?.
+

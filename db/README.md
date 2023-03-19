@@ -27,6 +27,8 @@ ALTER DATABASE "hmsmeetnet_v3LPop" OWNER TO postgres;
 
 ### aanameken van de schema's
 
+schema bestand: https://drive.google.com/file/d/19-fz_YFYEayl5NM_Ku0FyK97rr7uIINy/view?usp=sharing
+
 Kopieer de inhoud van het schema bestand in een nieuwe querytool (rechtmuis klik op `hmsmeetnet_v3LPop`-> query tool), voer het uit.
 
 ### data

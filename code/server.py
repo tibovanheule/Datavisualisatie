@@ -51,11 +51,19 @@ def beschikbaarheden(conn=None):
     return (years, 200) if years else ({}, 500)
 
 
-
-@app.route('/static/<path:path>')
-def doc_files(path):
+@app.route('/beschikbaarheden')
+def beschikbaarhedenview():
     """!
     Insert new project in management database
     @return a dict with id and names of waterinfo station.
     """
-    return send_from_directory('static', path)
+    return send_from_directory('files',"beschikbaarheden.html")
+
+
+@app.route('/static/<path:path>')
+def doc_files():
+    """!
+    Insert new project in management database
+    @return a dict with id and names of waterinfo station.
+    """
+    return send_from_directory('files/static', path)

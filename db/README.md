@@ -40,6 +40,11 @@ Extraheer de zip file en rechtmuis klik op de nieuwedatabank,
 
 ## data beschrijving
 
+Belangrijke woordenschat:
+- lspi: concatenatie van location_id en parameter.
+- parameter: Wat er gemeten wordt. bijvoorbeeld graden of golfhoogte.
+-
+
 ### functies
 
 Er zijn bepaalde functies beschikbaar. Ze kunnen opgeroepen worden zoals rechts weergegeven in onderstaande figuur. 
@@ -70,4 +75,7 @@ Er zijn bepaalde functies beschikbaar. Ze kunnen opgeroepen worden zoals rechts 
 - eenheden: Beschrijft de eenheid van een parameter, bijvoorbeeld KWIZTW (kinte bank temperatuur zeewater) => graden
 - estimator: Aangemaakt door een collega, negeer dus best! gebruikt voor bepaalde modellen op de data te draaien en te valideren, volledig buiten de scope van dit project.
 - labels:  Aangemaakt door een collega, negeer dus best. LEEG
-- locations: Locatie beschrijving van elke paremeters 
+- locations: Locatie beschrijving van elke paremeters, vul ik nog aan!
+- lookup: verbindt lspi, series en parameter aan elkaar.
+- measurement_model: Aangemaakt door een collega, negeer dus best! gebruikt voor bepaalde modellen op de data te draaien en te valideren, volledig buiten de scope van dit project.
+

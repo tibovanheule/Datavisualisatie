@@ -1,0 +1,5 @@
+flask
+psycopg2
+flask-compress
+flask_cors
+flask-expects-json

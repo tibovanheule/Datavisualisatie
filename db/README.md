@@ -42,7 +42,7 @@ Extraheer de zip file en rechtmuis klik op de nieuwedatabank,
 
 ### functies
 
-Er zijn bepaalde functies beschikbaar. Ze kunnen opgeroepen  worden zoals rechts weergegeven in onderstaande figuur. 
+Er zijn bepaalde functies beschikbaar. Ze kunnen opgeroepen worden zoals rechts weergegeven in onderstaande figuur. 
 
 ![afbeelding](https://user-images.githubusercontent.com/28403026/226182694-e82992be-d7fe-48cf-8b6c-2a7756717708.png)
 
@@ -55,3 +55,19 @@ Er zijn bepaalde functies beschikbaar. Ze kunnen opgeroepen  worden zoals rechts
 - outliers(series_id, multiplier INT): Hetzelfde als outliers(series_id), maar met optie om een INT (0,1,2,...) te geven om de formule te aan te passen. gemiddelde -+ standaard_afwijking*?.
 - outliers(series_id, multiplier float): Hetzelfde als outliers(series_id), maar met optie om een Float (bijvoorbeeld 0.5) te geven om de formule te aan te passen. gemiddelde -+ standaard_afwijking*?.
 
+### tabellen
+
+![afbeelding](https://user-images.githubusercontent.com/28403026/226183703-3b10957f-8a67-4628-8902-09372a630df7.png)
+
+- aux_lookup: Aangemaakt door een collega, negeer dus best.
+- aux_measurements: Aangemaakt door een collega, negeer dus best.
+- beschikbaarheden: Om niet alle beschikbaarheden uit te rekenen bij elke fucntie call zijn van de afgelopen campagnes de beschikbaarheden al opgelsagen in een tabel.
+- cb1: legt link tussen series_id en een cb1_bitvector
+- cb1bitvector: Beschrijft afkomst data en de gebruikte validatie technieken. Sinds de volledige databank gevalideerd is, is deze tabel leeg
+- cb2: legt link tussen series_id en een cb1_bitvector
+- cb2bitvector: Beschrijft afkomst data en de gebruikte validatie technieken. Sinds de volledige databank gevalideerd is, is deze tabel leeg
+- distribution: Aangemaakt door een collega, negeer dus best.
+- eenheden: Beschrijft de eenheid van een parameter, bijvoorbeeld KWIZTW (kinte bank temperatuur zeewater) => graden
+- estimator: Aangemaakt door een collega, negeer dus best! gebruikt voor bepaalde modellen op de data te draaien en te valideren, volledig buiten de scope van dit project.
+- labels:  Aangemaakt door een collega, negeer dus best. LEEG
+- locations: Locatie beschrijving van elke paremeters 

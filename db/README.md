@@ -41,9 +41,9 @@ Extraheer de zip file en rechtmuis klik op de nieuwedatabank,
 ## data beschrijving
 
 Belangrijke woordenschat:
-- lspi: concatenatie van location_id en parameter.
-- parameter: Wat er gemeten wordt. bijvoorbeeld graden of golfhoogte.
--
+- lspi: concatenatie van location_id en parameter. BESTAAT ALTIJD UIT 6 LETTERS/CIJFERS
+- parameter: Wat er gemeten wordt. bijvoorbeeld graden of golfhoogte. BESTAAT ALTIJD UIT 3 LETTERS/CIJFERS
+- locationid: id van de location. BESTAAT ALTIJD UIT 3 LETTERS/CIJFERS
 
 ### functies
 
@@ -78,4 +78,12 @@ Er zijn bepaalde functies beschikbaar. Ze kunnen opgeroepen worden zoals rechts 
 - locations: Locatie beschrijving van elke paremeters, vul ik nog aan!
 - lookup: verbindt lspi, series en parameter aan elkaar.
 - measurement_model: Aangemaakt door een collega, negeer dus best! gebruikt voor bepaalde modellen op de data te draaien en te valideren, volledig buiten de scope van dit project.
+- measurements: data van de series_id
+- merged: Aangemaakt door een collega, negeer dus best!
+- model:  Aangemaakt door een collega, negeer dus best!
+- parameter: extra info over de parameters, Wordt aangevuld!
+- process_model:  Aangemaakt door een collega, negeer dus best!
+- score:  Aangemaakt door een collega, negeer dus best!
+- thresholds:  Aangemaakt door een collega, negeer dus best!
+- transformations:  Aangemaakt door een collega, negeer dus best!
 

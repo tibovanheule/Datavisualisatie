@@ -14,6 +14,5 @@ password="'dataviz'"
 gssencmode = 'disable'
 
 # databank queries
-lspi_query = "select series_id, lspi from lookup;"
-eenheid_query = "select eenheid, type from eenheden where code = %s"
+
 

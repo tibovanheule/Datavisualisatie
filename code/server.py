@@ -16,11 +16,32 @@ compress.init_app(app)
 CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+
+
+
+@app.route('/api/lspi', methods=['GET'])
+@db_connection
+def lspi(conn=None):
+    """!
+    gives back lspi
+    @return 
+    """
+    eenheid_query = "select eenheid, type from eenheden where code = %s"
+    lspi_query = "select series_id, lspi from lookup;"
+    lspi = []
+    if conn is not None:
+        with conn.cursor("get data") as cur:
+            cur.execute(lspi_query,())
+            for i in cur:
+                lspi.append({"series_id":i[0],"lspi":i[1]})
+      
+    return (lspi, 200) if lspi else ({}, 500)
+
 @app.route('/api/beschikbaarheden', methods=['POST'])
 @expects_json({
     'series_id': 'object'
 })
-@db_connection()
+@db_connection
 def beschikbaarheden(conn=None):
     """!
     gives back beschikbaarheden
@@ -32,22 +53,15 @@ def beschikbaarheden(conn=None):
     
     series_id = data['series_id']
     beschikbaarheden_query = "select percent, month, year from beschikbaarheden(%s)"
-    years = {}
+    years = []
     if conn is not None:
         with conn.cursor("get data") as cur:
             cur.execute(beschikbaarheden_query,(series_id,))
             map_month = ["januari", "febuari", "maart", "april", "mei", "juni",\
                     "juli", "augustus", "september", "oktober", "november", "december"]
             for i in cur:
-                if i[2] not in years:
-                    years[i[2]] = {"jaar":i[2]}
-                years[i[2]][map_month[i[1]-1]] = i[0]
-            if len(years)>0:
-                min_jaar = min(years.keys())
-                max_jaar = max(years.keys())
-                for i in range(min_jaar,max_jaar+1):
-                    if i not in years:
-                        years[i[2]] = {"jaar":str(int(i))}        
+                years.append({"year":i[2],"month":map_month[i[1]-1],"result":i[0]})
+      
     return (years, 200) if years else ({}, 500)
 
 

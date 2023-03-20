@@ -1,0 +1,13 @@
+Doelpubliek: 
+	- Musea | educatief
+	- Klimaattrends
+	- 
+Vragen:
+	- Wanneer is het zeewater het koudst/warmst?
+	- Wat is de invloed van de wind op de golven?
+	- Kan een stormwind het gemeten getij beïnvloeden?
+	- Relatie stroming, wind en golfrichting
+	- Heeft de temperatuursgradiënt van de zee een invloed op de stroming?
+	- Tegen een hoe sterke stroming moet een windturbine op zee kunnen?
+	- Invloed van de maan op het getij
+

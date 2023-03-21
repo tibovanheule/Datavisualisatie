@@ -75,7 +75,7 @@ def beschikbaarhedenview():
 
 
 @app.route('/static/<path:path>')
-def doc_files():
+def doc_files(path):
     """!
     Insert new project in management database
     @return a dict with id and names of waterinfo station.

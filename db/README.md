@@ -27,13 +27,13 @@ ALTER DATABASE "hmsmeetnet_v3LPop" OWNER TO postgres;
 
 ### aanameken van de schema's
 
-schema bestand: https://drive.google.com/file/d/19-fz_YFYEayl5NM_Ku0FyK97rr7uIINy/view?usp=sharing
+schema bestand: https://drive.google.com/drive/folders/10Flih5PxZQFnh0rX99_AZVJkugTV9zxv?usp=share_link
 
 Kopieer de inhoud van het schema bestand in een nieuwe querytool (rechtmuis klik op `hmsmeetnet_v3LPop`-> query tool), voer het uit.
 
 ### data
 
-Download de zip file vanaf: https://drive.google.com/file/d/1aui_UKMYdRdJy07oZ7-97B-7hZFNCYqY/view?usp=sharing
+Download de zip file vanaf: https://drive.google.com/drive/folders/10Flih5PxZQFnh0rX99_AZVJkugTV9zxv?usp=share_link
 Extraheer de zip file en rechtmuis klik op de nieuwedatabank, 
 
 ![afbeelding](https://user-images.githubusercontent.com/28403026/226174489-a954e0bf-0a93-48a7-9697-591109b151a1.png)

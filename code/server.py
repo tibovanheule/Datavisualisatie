@@ -90,8 +90,8 @@ def get_param(param, conn=None):
             f'<h1>Status 404</h1>Beschikbare parameters zijn: <table><tr>{"</tr><tr>".join([f"<td>{param}</td><td>{param_dict[param]}</td>" for param in param_dict.keys()])}</tr></table>'
             ,status=404)
 
-    min_date = request.args.get('min_date', type=datetime.datetime.fromisoformat)
-    max_date = request.args.get('max_date', type=datetime.datetime.fromisoformat)
+    min_date = request.args.get('min_date', type=lambda x: datetime.datetime.fromisoformat(x.rstrip('Z')))
+    max_date = request.args.get('max_date', type=lambda x: datetime.datetime.fromisoformat(x.rstrip('Z')))
     if min_date is None or max_date is None:
         return Response('<h1>Status 400</h1>Gelieve een min_date en max_date te voorzien', status=400)
 

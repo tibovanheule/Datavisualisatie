@@ -10,6 +10,7 @@ from flask_cors import CORS, cross_origin
 from flask_expects_json import expects_json
 from .helpers.db import db_connection, CSVCursor
 import datetime
+import os
 
 app = Flask(__name__)
 compress = Compress()
@@ -102,19 +103,15 @@ def get_param(param, conn=None):
         return Response(str(cur), mimetype='text/csv')
 
 
-@app.route('/beschikbaarheden')
-def beschikbaarhedenview():
-    """!
-    Insert new project in management database
-    @return a dict with id and names of waterinfo station.
-    """
-    return send_from_directory('files',"beschikbaarheden.html")
-
-
 @app.route('/<path:path>')
-def doc_files(path):
+def files(path):
     """!
-    Insert new project in management database
-    @return a dict with id and names of waterinfo station.
+    Return any file with the given path.
     """
-    return send_from_directory('files', path)
+    if os.path.isfile(os.path.join('files', path)):
+        return send_from_directory('files', path)
+    if os.path.isdir(os.path.join('files', path)):
+        return send_from_directory('files', os.path.join(path, 'index.html'))
+    if os.path.isfile(os.path.join('files', path + '.html')):
+        return send_from_directory('files', path + '.html')
+    return Response(404)

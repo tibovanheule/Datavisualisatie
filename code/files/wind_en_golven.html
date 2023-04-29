@@ -25,7 +25,6 @@ const min_date = "2012-01-01";
 const max_date = "2012-02-01";
 
 const windsnelheden = await d3.csv(`/api/windsnelheid?min_date=${min_date}&max_date=${max_date}`, d3.autoType);
-console.log(windsnelheden);
 const golfhoogtes = await d3.csv(`/api/golfhoogte?min_date=${min_date}&max_date=${max_date}`, d3.autoType);
 
 const x_wind = d3.scaleTime()

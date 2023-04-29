@@ -66,36 +66,40 @@ def beschikbaarheden(conn=None):
     return (years, 200) if years else ({}, 500)
 
 
-@app.route('/api/windsnelheid')
+param_dict = {
+    'golfperiode': 'GTZ',
+    'hoogste_golven': 'HLF',
+    'golfhoogte': 'HM0',
+    'luchtdruk': 'LDR',
+    'richting_hoogfrequente_golven': 'RHF',
+    'richting_laagfrequente_golven': 'RLF',
+    'zeewatertemperatuur': 'TZW',
+    'windrichting': 'WRS',
+    'getij': 'WS5',
+    'windsnelheid': 'WVS'
+}
+
+@app.route('/api/<string:param>')
 @db_connection
-def windsnelheid(conn=None):
+def get_param(param, conn=None):
+    if param in param_dict:
+        param = param_dict[param]
+    if param not in param_dict.values():
+        return Response(
+            f'<h1>Status 404</h1>Beschikbare parameters zijn: <table><tr>{"</tr><tr>".join([f"<td>{param}</td><td>{param_dict[param]}</td>" for param in param_dict.keys()])}</tr></table>'
+            ,status=404)
+
     min_date = request.args.get('min_date', type=datetime.datetime.fromisoformat)
     max_date = request.args.get('max_date', type=datetime.datetime.fromisoformat)
     if min_date is None or max_date is None:
-        return Response(status=400)
+        return Response('<h1>Status 400</h1>Gelieve een min_date en max_date te voorzien', status=400)
 
     with conn.cursor(cursor_factory=CSVCursor) as cur:
         cur.execute("""
             SELECT datum, value FROM measurements m INNER JOIN lookup l ON m.series_id=l.series_id 
-            WHERE l.par='WVS' AND datum >= %(min_date)s AND datum <= %(max_date)s ORDER BY datum;
-        """, { 'min_date': min_date, 'max_date': max_date })
-        return str(cur)
-
-
-@app.route('/api/golfhoogte')
-@db_connection
-def golfhoogte(conn=None):
-    min_date = request.args.get('min_date', type=datetime.datetime.fromisoformat)
-    max_date = request.args.get('max_date', type=datetime.datetime.fromisoformat)
-    if min_date is None or max_date is None:
-        return Response(status=400)
-    
-    with conn.cursor(cursor_factory=CSVCursor) as cur:
-        cur.execute("""
-            SELECT datum, value FROM measurements m INNER JOIN lookup l ON m.series_id=l.series_id 
-            WHERE l.par='GHA' AND datum >= %(min_date)s AND datum <= %(max_date)s ORDER BY datum;
-        """, { 'min_date': min_date, 'max_date': max_date })
-        return str(cur)
+            WHERE l.par=%(param)s AND datum >= %(min_date)s AND datum <= %(max_date)s ORDER BY datum;
+        """, { 'param': param, 'min_date': min_date, 'max_date': max_date })
+        return Response(str(cur), mimetype='text/csv')
 
 
 @app.route('/beschikbaarheden')

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wind en Golven</title>
+    <script src="https://d3js.org/d3.v6.js"></script>
+</head>
+<body>
+    <div id="wind-golven"></div>
+<script type="module">
+const margin = {top: 10, right: 30, bottom: 30, left: 60},
+    width = 920 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+const svg = d3.select('#wind-golven')
+    .append('svg')
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.bottom + margin.top)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+const min_date = "2012-01-01";
+const max_date = "2012-02-01";
+
+const windsnelheden = await d3.csv(`/api/windsnelheid?min_date=${min_date}&max_date=${max_date}`, d3.autoType);
+console.log(windsnelheden);
+const golfhoogtes = await d3.csv(`/api/golfhoogte?min_date=${min_date}&max_date=${max_date}`, d3.autoType);
+
+const x_wind = d3.scaleTime()
+    .domain(d3.extent(windsnelheden, d => d.datum))
+    .range([ 0, width ]);
+svg.append("g")
+    .attr("transform", `translate(0, ${height})`)
+    .call(d3.axisBottom(x_wind));
+
+const y_wind = d3.scaleLinear()
+    .domain([0, d3.max(windsnelheden, d => d.value)])
+    .range([ height, 0 ]);
+svg.append("g")
+    .call(d3.axisLeft(y_wind))
+
+svg.append("path")
+    .datum(windsnelheden)
+    .attr("fill", "none")
+    .attr("stroke", "grey")
+    .attr("stroke-width", 1.5)
+    .attr("d", d3.line()
+        .x(d => x_wind(d.datum))
+        .y(d => y_wind(d.value))
+    );
+
+const x_golf = d3.scaleTime()
+    .domain(d3.extent(golfhoogtes, d => d.datum))
+    .range([ 0, width ]);
+
+
+const y_golf = d3.scaleLinear()
+    .domain([0, d3.max(golfhoogtes, d => d.value)])
+    .range([ height, 0 ]);
+svg.append("g")
+    .attr("transform", `translate(${width}, 0)`)
+    .call(d3.axisRight(y_golf))
+
+svg.append("path")
+    .datum(golfhoogtes)
+    .attr("fill", "none")
+    .attr("stroke", "steelblue")
+    .attr("stroke-width", 1.5)
+    .attr("d", d3.line()
+        .x(d => x_golf(d.datum))
+        .y(d => y_golf(d.value))
+    );
+</script>
+</body>
+</html>

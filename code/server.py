@@ -114,4 +114,4 @@ def files(path):
         return send_from_directory('files', os.path.join(path, 'index.html'))
     if os.path.isfile(os.path.join('files', path + '.html')):
         return send_from_directory('files', path + '.html')
-    return Response(404)
+    return Response(status=404)

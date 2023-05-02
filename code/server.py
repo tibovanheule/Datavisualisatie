@@ -66,6 +66,24 @@ def beschikbaarheden(conn=None):
       
     return (years, 200) if years else ({}, 500)
 
+@app.route('/api/locations', methods=['GET'])
+@db_connection
+def locations(conn=None):
+    """!
+    gives back beschikbaarheden
+    @return 
+    """
+
+    loc_query = "select * from locations;"
+    years = []
+    if conn is not None:
+        with conn.cursor("get data") as cur:
+            cur.execute(loc_query,())
+            for i in cur:
+                years.append(dict(longitude=i[2],latitude=i[1],name=i[3]))
+      
+    return (years, 200) if years else ({}, 500)
+
 
 param_dict = {
     'golfperiode': 'GTZ',
@@ -101,6 +119,14 @@ def get_param(param, conn=None):
             WHERE l.par=%(param)s AND datum >= %(min_date)s AND datum <= %(max_date)s ORDER BY datum;
         """, { 'param': param, 'min_date': min_date, 'max_date': max_date })
         return Response(str(cur), mimetype='text/csv')
+
+@app.route('/locations')
+def locview():
+    """!
+    Insert new project in management database
+    @return a dict with id and names of waterinfo station.
+    """
+    return send_from_directory('files',"locations.html")
 
 
 @app.route('/<path:path>')

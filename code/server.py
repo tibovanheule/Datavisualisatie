@@ -4,13 +4,13 @@ Provides the api routes.
 More details.
 """
 
-from flask import Flask, send_from_directory, request, Response
+from flask import Flask, send_file, request, Response
 from flask_compress import Compress
 from flask_cors import CORS, cross_origin
 from flask_expects_json import expects_json
 from .helpers.db import db_connection, CSVCursor
 import datetime
-import os
+from pathlib import Path
 
 app = Flask(__name__)
 compress = Compress()
@@ -120,24 +120,15 @@ def get_param(param, conn=None):
         """, { 'param': param, 'min_date': min_date, 'max_date': max_date })
         return Response(str(cur), mimetype='text/csv')
 
-@app.route('/locations')
-def locview():
-    """!
-    Insert new project in management database
-    @return a dict with id and names of waterinfo station.
-    """
-    return send_from_directory('files',"locations.html")
-
-
 @app.route('/<path:path>')
 def files(path):
     """!
     Return any file with the given path.
     """
-    if os.path.isfile(os.path.join('files', path)):
-        return send_from_directory('files', path)
-    if os.path.isdir(os.path.join('files', path)):
-        return send_from_directory('files', os.path.join(path, 'index.html'))
-    if os.path.isfile(os.path.join('files', path + '.html')):
-        return send_from_directory('files', path + '.html')
+    base_loc = Path("./files")
+    files = list(base_loc.glob(path+"*"))
+    if len(files) >0:
+        return send_file(files[0])
+    if (base_loc/path).is_dir():
+        return send_file(base_loc/path/'index.html')
     return Response(status=404)

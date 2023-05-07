@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getij</title>
+    <script>
+        var uid_count = 0;
+
+        function uid(name) {
+            return new Id("O-" + (name == null ? "" : name + "-") + ++uid_count);
+        }
+
+        function Id(id) {
+            this.id = id;
+            this.href = new URL(`#${id}`, location) + "";
+        }
+
+        Id.prototype.toString = function() {
+            return "url(" + this.href + ")";
+        };
+    </script>
+    <script src="https://d3js.org/d3.v6.js"></script>
+</head>
+<body>
+    <div id="getij"></div>
+<script type="module">
+    const margin = {top: 10, right: 30, bottom: 30, left: 60},
+    width = 920 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+const min_date = "2011-01-01";
+const max_date = "2011-04-30";
+
+const getij_data = await d3.csv(`/api/getij?min_date=${min_date}&max_date=${max_date}`, d3.autoType);
+
+const datum_extent = d3.extent(getij_data, d => d.datum);
+const getij_extent = d3.extent(getij_data, d => d.value);
+
+const x_scale = d3.scaleTime()
+    .domain(datum_extent)
+    .range([0, width]);
+
+const y_scale = d3.scaleLinear()
+    .domain(getij_extent)
+    .range([height, 0]);
+
+const x_axis = (g, x) => g
+    .attr("transform", `translate(0, ${height + margin.top})`)
+    .call(d3
+        .axisBottom(x)
+        .ticks(width / 80)
+        .tickSizeOuter(0)
+    );
+
+const y_axis = (g, y) => g
+    .attr("transform", `translate(${margin.left}, 0)`)
+    .call(d3.axisLeft(y).ticks(null, "s"))
+    .call(g => g.select(".domain").remove())
+    .call(g => g.select(".tick:last-of-type text").clone()
+        .attr("x", 3)
+        .attr("text-anchor", "start")
+        .attr("font-weight", "bold")
+    );
+
+const area = (data, x, y) => d3.area()
+    .x(d => x(d.datum))
+    .y0(y(0))
+    .y1(d => y(d.value))
+    (data);
+
+const zoom = d3.zoom()
+    .scaleExtent([1, 32])
+    .extent([[margin.left, 0], [width - margin.right, height]])
+    .translateExtent([[margin.left, -Infinity], [width - margin.right, Infinity]])
+    .on("zoom", zoomed);
+
+const svg = d3.select('#getij')
+    .append('svg')
+    .attr("viewBox", [0, 0, width, height + margin.top + margin.bottom]);
+
+const clip = uid("clip");
+
+svg.append("clipPath")
+    .attr("id", clip.id)
+    .append("rect")
+    .attr("x", margin.left)
+    .attr("y", margin.top)
+    .attr("width", width - margin.left - margin.right)
+    .attr("height", height);
+
+const getij_path = svg.append("path")
+    .attr("clip-path", clip)
+    .attr("fill", 'blue')
+    .attr("stroke", "black")
+    .attr("d", area(getij_data, x_scale, y_scale));
+
+const gx = svg.append("g")
+    .call(x_axis, x_scale);
+
+svg.append("g")
+    .call(y_axis, y_scale);
+
+svg.call(zoom)
+    .transition()
+    .duration(250)
+    .call(zoom.scaleTo, 4, [x_scale(Date.UTC(2012, 1, 15)), 0]);
+
+function zoomed(event) {
+    const xz = event.transform.rescaleX(x_scale);
+    getij_path.attr("d", area(getij_data, xz, y_scale));
+    gx.call(x_axis, xz);
+}
+</script>
+</body>
+</html>

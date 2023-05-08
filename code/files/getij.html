@@ -33,7 +33,11 @@
 const min_date = "2011-01-01";
 const max_date = "2011-04-30";
 
-const getij_data = await d3.csv(`/api/getij?min_date=${min_date}&max_date=${max_date}`, d3.autoType);
+const lunar_data_future = d3.csv('/data/luna.csv', d3.autoType);
+const getij_data = await d3.csv(`/data/min_max_getij_blk.csv`, d3.autoType);
+const high_tide = getij_data.filter(d => d.value > 250);
+const neap_tide = getij_data.filter(d => d.value < 250);
+const tides = neap_tide.map((e, i) => { return { 'datum_low': e.datum, 'value_low': e.value, 'datum_high': high_tide[i]?.datum, 'value_high': high_tide[i]?.value } ;})
 
 const datum_extent = d3.extent(getij_data, d => d.datum);
 const getij_extent = d3.extent(getij_data, d => d.value);
@@ -65,9 +69,11 @@ const y_axis = (g, y) => g
     );
 
 const area = (data, x, y) => d3.area()
-    .x(d => x(d.datum))
-    .y0(y(0))
-    .y1(d => y(d.value))
+    .curve(d3.curveBasis)
+    .x0(d => x(d.datum_low))
+    .y0(d => y(d.value_low))
+    .x1(d => x(d.datum_high))
+    .y1(d => y(d.value_high))
     (data);
 
 const zoom = d3.zoom()
@@ -92,9 +98,9 @@ svg.append("clipPath")
 
 const getij_path = svg.append("path")
     .attr("clip-path", clip)
-    .attr("fill", 'blue')
+    .attr("fill", 'lightblue')
     .attr("stroke", "black")
-    .attr("d", area(getij_data, x_scale, y_scale));
+    .attr("d", area(tides, x_scale, y_scale));
 
 const gx = svg.append("g")
     .call(x_axis, x_scale);
@@ -107,10 +113,26 @@ svg.call(zoom)
     .duration(250)
     .call(zoom.scaleTo, 4, [x_scale(Date.UTC(2012, 1, 15)), 0]);
 
+const moon_emoji = {0: "🌕", 10: "🌗", 20: "🌑", 30: "🌓"};
+const lunar_data = await lunar_data_future.then(d => d.filter(d => d.date >= datum_extent[0] && d.date <= datum_extent[1]));
+const luna_group = svg.append("g").attr("clip-path", clip);
+const lunas = (d, x) => {
+    luna_group.selectAll("text").remove();
+    luna_group.selectAll("text")
+        .data(lunar_data)
+        .enter().append("text")
+        .attr("x", d => x(d.date))
+        .attr("y", height/2 + margin.top)
+        .attr("text-anchor", "middle")
+        .text(d => moon_emoji[d.luna]);
+}
+lunas(lunar_data, x_scale);
+
 function zoomed(event) {
     const xz = event.transform.rescaleX(x_scale);
-    getij_path.attr("d", area(getij_data, xz, y_scale));
+    getij_path.attr("d", area(tides, xz, y_scale));
     gx.call(x_axis, xz);
+    lunas(lunar_data, xz)
 }
 </script>
 </body>

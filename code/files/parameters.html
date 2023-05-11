@@ -1,14 +1,103 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Parameters</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+
+        .responsive-table {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: auto;
+        }
+
+        .responsive-table li {
+            border-radius: 3px;
+            padding: 25px 30px;
+            display: flex;
+            margin-bottom: 25px;
+        }
+
+        .responsive-table .table-header {
+            background-color: #263544;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: white;
+        }
+
+        .responsive-table .table-row {
+            background-color: #ffffff;
+            box-shadow: 0 0 9px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .table-row div input {
+            width: 50%;
+        }
+
+        .col {
+            flex-basis: 50%;
+        }
+
+        @media all and (max-width: 767px) {
+            .responsive-table .table-header {
+                display: none;
+            }
+
+            .responsive-table li {
+                display: block;
+            }
+
+            .responsive-table .col {
+                flex-basis: 100%;
+                display: flex;
+                padding: 10px 0;
+            }
+
+            .responsive-table .col:before {
+                color: #6C7A89;
+                padding-right: 10px;
+                content: attr(data-label);
+                flex-basis: 50%;
+                text-align: right;
+            }
+        }
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
 <meta charset="utf-8">
 
-<ul id="mapid"></ul>
+<ul class="responsive-table" id="parameters_list">
 
-<script>
-fetch("/api/parameters").then((d)=>d.json()).then((data)=>{
-  console.log(data)
-  // mapid is the id of the div where the map will appear
-  for (i of data){
-      document.getElementById("mapid").innerHTML += `<li><strong>Location id:</strong> ${i.location_id} <strong>Lattitude: </strong> ${i.latitude} <strong>Longittude: </strong> ${i.longitude} <strong>Location name: </strong> ${i.location_name} <strong>Seires id:</strong> ${i.series_id} <strong>Lspi</strong> ${i.lspi} <strong>Unit: </strong> ${i.unit} <strong>Parameter name</strong> ${i.parameter_name} <strong>Parameter id</strong> ${i.parameter_id}</li>`;
-  }
-});
-</script>
+</ul>
+</body>
+<footer>
+    <script>
+        fetch("/api/parameters").then((d) => d.json()).then((data) => {
+            document.getElementById("parameters_list").innerHTML = "";
+            // parameters_list is the id of the div where the map will appear
+            let keys = Object.keys(data[0]);
+            let html = `<li class="table-header">`;
+            for (let i of keys) {
+                html += `<div class="col">${i}</div>`;
+            }
+            html += `</li>`;
+            for (let i of data) {
+                html += `<li class="table-row">`;
+                for (let key of keys) {
+                    html += `<div class="col" data-label="${key}">${i[key]}</div>`;
+                }
+                html += `</li>`;
+            }
+            document.getElementById("parameters_list").innerHTML += html;
+        });
+    </script>
+</footer>
+</html>

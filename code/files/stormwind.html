@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stormwind</title>
+    <script>
+        var uid_count = 0;
+
+        function uid(name) {
+            return new Id("O-" + (name == null ? "" : name + "-") + ++uid_count);
+        }
+
+        function Id(id) {
+            this.id = id;
+            this.href = new URL(`#${id}`, location) + "";
+        }
+
+        Id.prototype.toString = function() {
+            return "url(" + this.href + ")";
+        };
+    </script>
+    <script src="https://d3js.org/d3.v6.js"></script>
+</head>
+<body>
+    <div id="getij"></div>
+<script type="module">
+    const margin = {top: 10, right: 60, bottom: 30, left: 60},
+    width = 920 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+const wind_color = '#6B819C';
+
+
+const lunar_data_future = d3.csv('/data/luna.csv', d3.autoType);
+const wind_data = (await Promise.all([d3.csv('/data/124_4.csv', d3.autoType), d3.csv('/data/118_4.csv', d3.autoType)])).flat(1).sort((a,b) => a.datum - b.datum);
+const getij_data = await d3.csv(`/data/min_max_getij_mp7.csv`, d3.autoType);
+const high_tide = getij_data.filter(d => d.value > 250);
+const neap_tide = getij_data.filter(d => d.value < 250);
+const tides = neap_tide.map((e, i) => { return { 'datum_low': e.datum, 'value_low': e.value, 'datum_high': high_tide[i]?.datum, 'value_high': high_tide[i]?.value } ;})
+
+const datum_extent = d3.extent(getij_data, d => d.datum);
+const getij_extent = d3.extent(getij_data, d => d.value);
+const wind_extent = d3.extent(wind_data, d => d.value);
+
+const x_scale = d3.scaleTime()
+    .domain(datum_extent)
+    .range([margin.left, width + margin.left]);
+
+const getij_y_scale = d3.scaleLinear()
+    .domain(getij_extent)
+    .range([height + margin.top, margin.top]);
+
+const wind_y_scale = d3.scaleLinear()
+    .domain(wind_extent)
+    .range([height + margin.top, margin.top]);
+
+const x_axis = (g, x) => g
+    .attr("transform", `translate(0, ${height + margin.top})`)
+    .call(d3
+        .axisBottom(x)
+        .ticks(width / 80)
+        .tickSizeOuter(0)
+    );
+
+const getij_y_axis = (g, y) => g
+    .attr("transform", `translate(${margin.left}, 0)`)
+    .call(d3.axisLeft(y).ticks(null, "s"))
+    .call(g => g.select(".domain").remove())
+    .call(g => g.select(".tick:last-of-type text").clone()
+        .attr("x", 3)
+        .attr("text-anchor", "start")
+        .attr("font-weight", "bold")
+    );
+
+const wind_y_axis = (g, y) => g
+    .attr("transform", `translate(${width - margin.right}, 0)`)
+    .attr("color", wind_color)
+    .call(d3.axisRight(y).ticks(null, "s"))
+    .call(g => g.select(".domain").remove())
+    .call(g => g.select(".tick:last-of-type text").clone()
+        .attr("x", 3)
+        .attr("text-anchor", "start")
+        .attr("font-weight", "bold")
+    );
+
+const area = (data, x, y) => d3.area()
+    .curve(d3.curveBasis)
+    .x0(d => x(d.datum_low))
+    .y0(d => y(d.value_low))
+    .x1(d => x(d.datum_high))
+    .y1(d => y(d.value_high))
+    (data);
+
+const line = (data, x, y) => d3.line()
+    .x(d => x(d.datum))
+    .y(d => y(d.value))
+    (data);
+
+const zoom = d3.zoom()
+    .scaleExtent([1, 32])
+    .extent([[margin.left, 0], [width - margin.right, height]])
+    .translateExtent([[margin.left, -Infinity], [width - margin.right, Infinity]])
+    .on("zoom", zoomed);
+
+const svg = d3.select('#getij')
+    .append('svg')
+    .attr("viewBox", [0, 0, width, height + margin.top + margin.bottom]);
+
+const clip = uid("clip");
+
+svg.append("clipPath")
+    .attr("id", clip.id)
+    .append("rect")
+    .attr("x", margin.left)
+    .attr("y", margin.top)
+    .attr("width", width - margin.left - margin.right)
+    .attr("height", height);
+
+const getij_path = svg.append("path")
+    .attr("clip-path", clip)
+    .attr("fill", 'lightblue')
+    .attr("stroke", "black")
+    .attr("d", area(tides, x_scale, getij_y_scale));
+
+const wind_path = svg.append("path")
+    .attr("clip-path", clip)
+    .attr("stroke", wind_color)
+    .attr("fill", "none")
+    .attr("d", line(wind_data, x_scale, wind_y_scale));
+
+const gx = svg.append("g")
+    .call(x_axis, x_scale);
+
+svg.append("text")
+    .attr("class", "x label")
+    .attr("text-anchor", "end")
+    .attr("x", width/2)
+    .attr("y", height + margin.bottom + margin.top)
+    .attr("text-anchor", "middle")
+    .attr("style", "font-size: 0.8em")
+    .text("Datum");
+
+svg.append("g")
+    .call(getij_y_axis, getij_y_scale);
+
+svg.append("text")
+    .attr("class", "y label")
+    .attr("text-anchor", "end")
+    .attr("x", -height/2)
+    .attr("y", margin.left / 2 - 12)
+    .attr("dy", ".75em")
+    .attr("transform", "rotate(-90)")
+    .attr("text-anchor", "middle")
+    .attr("style", `font-size: 0.8em`)
+    .text("Hoogtes hoogtij en laagtij (m TAW)");
+
+svg.append("g")
+    .attr("fill", wind_color)
+    .call(wind_y_axis, wind_y_scale);
+
+svg.append("text")
+    .attr("class", "y label")
+    .attr("text-anchor", "end")
+    .attr("x", -height/2)
+    .attr("y", width - (margin.right / 2))
+    .attr("dy", ".75em")
+    .attr("transform", "rotate(-90)")
+    .attr("text-anchor", "middle")
+    .attr("style", `font-size: 0.8em`)
+    .attr("fill", wind_color)
+    .text("Windsnelheid (m/s)");
+
+svg.call(zoom)
+    .transition()
+    .duration(250)
+    .call(zoom.scaleTo, 18, [x_scale(Date.UTC(2013, 12, 6)), 0]);
+
+const moon_emoji = {0: "🌕", 10: "🌗", 20: "🌑", 30: "🌓"};
+const lunar_data = await lunar_data_future.then(d => d.filter(d => d.date >= datum_extent[0] && d.date <= datum_extent[1]));
+const luna_group = svg.append("g").attr("clip-path", clip);
+const lunas = (d, x) => {
+    luna_group.selectAll("text").remove();
+    luna_group.selectAll("text")
+        .data(lunar_data)
+        .enter().append("text")
+        .attr("x", d => x(d.date))
+        .attr("y", height/2 + margin.top)
+        .attr("text-anchor", "middle")
+        .text(d => moon_emoji[d.luna]);
+}
+lunas(lunar_data, x_scale);
+
+function zoomed(event) {
+    const xz = event.transform.rescaleX(x_scale);
+    getij_path.attr("d", area(tides, xz, getij_y_scale));
+    wind_path.attr("d", line(wind_data, xz, wind_y_scale))
+    gx.call(x_axis, xz);
+    lunas(lunar_data, xz)
+}
+</script>
+</body>
+</html>

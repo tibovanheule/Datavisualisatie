@@ -59,7 +59,7 @@ def beschikbaarheden(conn=None):
     if conn is not None:
         with conn.cursor("get data") as cur:
             cur.execute(beschikbaarheden_query,(series_id,))
-            map_month = ["januari", "febuari", "maart", "april", "mei", "juni",\
+            map_month = ["januari", "februari", "maart", "april", "mei", "juni",\
                     "juli", "augustus", "september", "oktober", "november", "december"]
             for i in cur:
                 years.append({"year":i[2],"month":map_month[i[1]-1],"result":i[0]})
@@ -84,41 +84,61 @@ def locations(conn=None):
       
     return (years, 200) if years else ({}, 500)
 
-
-param_dict = {
-    'golfperiode': 'GTZ',
-    'hoogste_golven': 'HLF',
-    'golfhoogte': 'HM0',
-    'luchtdruk': 'LDR',
-    'richting_hoogfrequente_golven': 'RHF',
-    'richting_laagfrequente_golven': 'RLF',
-    'zeewatertemperatuur': 'TZW',
-    'windrichting': 'WRS',
-    'getij': 'WS5',
-    'windsnelheid': 'WVS'
-}
-
-@app.route('/api/<string:param>')
+@app.route('/api/parameters', methods=['GET'])
 @db_connection
-def get_param(param, conn=None):
-    if param in param_dict:
-        param = param_dict[param]
-    if param not in param_dict.values():
-        return Response(
-            f'<h1>Status 404</h1>Beschikbare parameters zijn: <table><tr>{"</tr><tr>".join([f"<td>{param}</td><td>{param_dict[param]}</td>" for param in param_dict.keys()])}</tr></table>'
-            ,status=404)
+def parameters(conn=None):
+    """!
+    gives back beschikbaarheden
+    @return 
+    """
 
-    min_date = request.args.get('min_date', type=lambda x: datetime.datetime.fromisoformat(x.rstrip('Z')))
-    max_date = request.args.get('max_date', type=lambda x: datetime.datetime.fromisoformat(x.rstrip('Z')))
-    if min_date is None or max_date is None:
-        return Response('<h1>Status 400</h1>Gelieve een min_date en max_date te voorzien', status=400)
+    loc_query = "select locations.location_id, latitude, longitude,locations.naam, series_id,lspi, unit, parameter.naam, parameter.parameter_id from locations join lookup on upper(locations.location_id) = upper(lookup.location_id) join parameter on upper(parameter.parameter_id) = upper(lookup.par);"
+    years = []
+    if conn is not None:
+        with conn.cursor("get data") as cur:
+            cur.execute(loc_query,())
+            for i in cur:
+                years.append(dict(location_id=i[0],latitude=i[1],longitude=[2],location_name=i[3],series_id=i[4],lspi=i[5],unit=i[6],parameter_name=i[7],parameter_id=i[8]))
+      
+    return (years, 200) if years else ({}, 500)
 
-    with conn.cursor(cursor_factory=CSVCursor) as cur:
-        cur.execute("""
-            SELECT datum, value FROM measurements m INNER JOIN lookup l ON m.series_id=l.series_id 
-            WHERE l.par=%(param)s AND datum >= %(min_date)s AND datum <= %(max_date)s ORDER BY datum;
-        """, { 'param': param, 'min_date': min_date, 'max_date': max_date })
-        return Response(str(cur), mimetype='text/csv')
+
+@app.route('/locations')
+def locations_html():
+    """!
+    Return any file with the given path.
+    """
+    return send_file('files/locations.html')
+
+@app.route('/beschikbaarheden')
+def beschikbaarheden_html():
+    """!
+    Return any file with the given path.
+    """
+    return send_file('files/beschikbaarheden.html')
+
+@app.route('/getij')
+def getij_html():
+    """!
+    Return any file with the given path.
+    """
+    return send_file('files/getij.html')
+
+
+@app.route('/parameters')
+def parameters_html():
+    """!
+    Return any file with the given path.
+    """
+    return send_file('files/parameters.html')
+
+@app.route('/wind en golven')
+def wind_en_golven_html():
+    """!
+    Return any file with the given path.
+    """
+    return send_file('files/wind_en_golven.html')
+
 
 @app.route('/<path:path>')
 def files(path):

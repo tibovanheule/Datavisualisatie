@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stormwind</title>
     <script>
-        var uid_count = 0;
+        let uid_count = 0;
 
         function uid(name) {
             return new Id("O-" + (name == null ? "" : name + "-") + ++uid_count);

@@ -114,9 +114,9 @@ svg.append("clipPath")
     .attr("id", clip.id)
     .append("rect")
     .attr("x", margin.left)
-    .attr("y", margin.top)
+    .attr("y", 0)
     .attr("width", width - margin.left - margin.right)
-    .attr("height", height);
+    .attr("height", height + margin.top + margin.bottom);
 
 const getij_path = svg.append("path")
     .attr("clip-path", clip)
@@ -186,7 +186,7 @@ const lunas = (d, x) => {
         .data(lunar_data)
         .enter().append("text")
         .attr("x", d => x(d.date))
-        .attr("y", height/2 + margin.top)
+        .attr("y", margin.top + 10)
         .attr("text-anchor", "middle")
         .text(d => moon_emoji[d.luna]);
 }

@@ -69,10 +69,10 @@ const [
     windrichting,
     golfrichting
 ] = await Promise.all([
-    d3.csv(`/api/windsnelheid?min_date=${min_date}&max_date=${max_date}`, d3.autoType),
-    d3.csv(`/api/golfhoogte?min_date=${min_date}&max_date=${max_date}`, d3.autoType),
-    d3.csv(`/api/windrichting?min_date=${min_date}&max_date=${max_date}`, d3.autoType),
-    d3.csv(`/api/richting_hoogfrequente_golven?min_date=${min_date}&max_date=${max_date}`, d3.autoType),
+    d3.csv('/data/118_4.csv', d3.autoType), // Oostende Oosterstaketsel Windsnelheden
+    d3.csv('/data/62_4.csv', d3.autoType),  // Oostende Poortjes Golfhoogte
+    d3.csv('/data/117_4.csv', d3.autoType), // Oostende Oosterstaketsel Windrichting
+    d3.csv('/data/65_4.csv', d3.autoType),  // Oostende Poortjes Richting Hoogfrequente Golven
 ]);
 
 /*const datum_extent = [new Date('2011-01-01'), new Date('2021-05-31')],
@@ -80,9 +80,11 @@ const [
     golf_extent = [0.0, 530.0];
 */
 
-const datum_extent = d3.extent(windsnelheden, d => d.datum),
-    wind_extent = d3.extent(windsnelheden, d => d.value),
-    golf_extent = d3.extent(golfhoogtes, d => d.value);
+const   wind_datum_extent = d3.extent(windsnelheden, d => d.datum),
+        golf_datum_extent = d3.extent(golfhoogtes, d => d.datum),
+        datum_extent = [new Date(Math.max(wind_datum_extent[0], golf_datum_extent[0])), new Date(Math.min(wind_datum_extent[1], golf_datum_extent[1]))],
+        wind_extent = d3.extent(windsnelheden, d => d.value),
+        golf_extent = d3.extent(golfhoogtes, d => d.value);
 
 const x_scale = d3.scaleTime()
     .domain(datum_extent)
@@ -105,9 +107,9 @@ const x_axis = (g, x) => g
     );
 
 const y_axis_golf = (g, y) => g
-    .attr("transform", `translate(${margin.left}, 0)`)
+    .attr("transform", `translate(${width - margin.right}, 0)`)
     .attr("color", water_color)
-    .call(d3.axisLeft(y).ticks(null, "s"))
+    .call(d3.axisRight(y).ticks(null, "s"))
     .call(g => g.select(".domain").remove())
     .call(g => g.select(".tick:last-of-type text").clone()
         .attr("x", 3)
@@ -116,9 +118,9 @@ const y_axis_golf = (g, y) => g
     );
 
 const y_axis_wind = (g, y) => g
-    .attr("transform", `translate(${width - margin.right}, 0)`)
+    .attr("transform", `translate(${margin.left}, 0)`)
     .attr("color", wind_color)
-    .call(d3.axisRight(y).ticks(null, "s"))
+    .call(d3.axisLeft(y).ticks(null, "s"))
     .call(g => g.select(".domain").remove())
     .call(g => g.select(".tick:last-of-type text").clone()
         .attr("x", 3)
@@ -208,7 +210,7 @@ svg.append("text")
     .attr("class", "y label")
     .attr("text-anchor", "end")
     .attr("x", -height/2)
-    .attr("y", width - (margin.right / 2))
+    .attr("y", margin.left / 2 - 12)
     .attr("dy", ".75em")
     .attr("transform", "rotate(-90)")
     .attr("text-anchor", "middle")
@@ -223,7 +225,7 @@ svg.append("text")
     .attr("class", "y label")
     .attr("text-anchor", "end")
     .attr("x", -height/2)
-    .attr("y", margin.left / 2 - 12)
+    .attr("y", width - (margin.right / 2))
     .attr("dy", ".75em")
     .attr("transform", "rotate(-90)")
     .attr("text-anchor", "middle")
@@ -234,7 +236,7 @@ svg.append("text")
 svg.call(zoom)
     .transition()
     .duration(250)
-    .call(zoom.scaleTo, 4, [x_scale(Date.UTC(2012, 1, 15)), 0]);
+    .call(zoom.scaleTo, 16, [x_scale(Date.UTC(2015, 11, 8)), 0]);
 
 function zoomed(event) {
     const xz = event.transform.rescaleX(x_scale);

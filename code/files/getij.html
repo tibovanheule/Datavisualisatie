@@ -44,11 +44,11 @@ const getij_extent = d3.extent(getij_data, d => d.value);
 
 const x_scale = d3.scaleTime()
     .domain(datum_extent)
-    .range([0, width]);
+    .range([margin.left, width + margin.left]);
 
 const y_scale = d3.scaleLinear()
     .domain(getij_extent)
-    .range([height, 0]);
+    .range([height + margin.top, margin.top]);
 
 const x_axis = (g, x) => g
     .attr("transform", `translate(0, ${height + margin.top})`)
@@ -105,8 +105,28 @@ const getij_path = svg.append("path")
 const gx = svg.append("g")
     .call(x_axis, x_scale);
 
+svg.append("text")
+    .attr("class", "x label")
+    .attr("text-anchor", "end")
+    .attr("x", width/2)
+    .attr("y", height + margin.bottom + margin.top)
+    .attr("text-anchor", "middle")
+    .attr("style", "font-size: 0.8em")
+    .text("Datum");
+
 svg.append("g")
     .call(y_axis, y_scale);
+
+svg.append("text")
+    .attr("class", "y label")
+    .attr("text-anchor", "end")
+    .attr("x", -height/2)
+    .attr("y", margin.left / 2 - 12)
+    .attr("dy", ".75em")
+    .attr("transform", "rotate(-90)")
+    .attr("text-anchor", "middle")
+    .attr("style", `font-size: 0.8em`)
+    .text("Hoogtes hoogtij en laagtij (m TAW)");
 
 svg.call(zoom)
     .transition()

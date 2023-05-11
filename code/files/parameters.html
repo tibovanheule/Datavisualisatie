@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<ul id="mapid"></ul>
+
+<script>
+fetch("/api/parameters").then((d)=>d.json()).then((data)=>{
+  console.log(data)
+  // mapid is the id of the div where the map will appear
+  for (i of data){
+      document.getElementById("mapid").innerHTML += `<li><strong>Location id:</strong> ${i.location_id} <strong>Lattitude: </strong> ${i.latitude} <strong>Longittude: </strong> ${i.longitude} <strong>Location name: </strong> ${i.location_name} <strong>Seires id:</strong> ${i.series_id} <strong>Lspi</strong> ${i.lspi} <strong>Unit: </strong> ${i.unit} <strong>Parameter name</strong> ${i.parameter_name} <strong>Parameter id</strong> ${i.parameter_id}</li>`;
+  }
+});
+</script>

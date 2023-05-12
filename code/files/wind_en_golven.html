@@ -14,6 +14,10 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-config" content="/files/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
+    
+    <script src="https://cdn.jsdelivr.net/npm/d3-color@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-interpolate@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-scale-chromatic@3"></script>
     <script>
         let uid_count = 0;
 
@@ -72,8 +76,12 @@
     const min_date = "2011-01-01";
     const max_date = "2011-12-31";
 
-    const wind_color = 'red';
-    const water_color = '#184e77';
+    const myColor = d3.scaleSequential(d3.interpolateBlues).domain([0,1]);
+
+    const wind_color = myColor(.4);
+    const water_color = myColor(.9);
+
+    console.log(wind_color)
 
     const [
         windsnelheden,

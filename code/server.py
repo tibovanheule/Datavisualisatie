@@ -147,6 +147,13 @@ def diep_vs_ondiep_html():
     """
     return send_file('files/diep_vs_ondiep_tzw.html')
 
+@app.route('/')
+def index_html():
+    """!
+    Return any file with the given path.
+    """
+    return send_file('files/index.html')
+
 
 @app.route('/<path:path>')
 def files(path):

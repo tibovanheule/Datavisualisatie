@@ -30,70 +30,8 @@
 </body>
 <footer>
     <script>
-        const zip = (a, b) => a.map((k, i) => [k, b[i]]);
-
-        function findLineByLeastSquares(values_x, values_y) {
-    let sum_x = 0;
-    let sum_y = 0;
-    let sum_xy = 0;
-    let sum_xx = 0;
-    let count = 0;
-
-    /*
-     * We'll use those variables for faster read/write access.
-     */
-    let values_length = values_x.length;
-
-    if (values_length != values_y.length) {
-        throw new Error('The parameters values_x and values_y need to have same size!');
-    }
-
-    /*
-     * Nothing to do.
-     */
-    if (values_length === 0) {
-        return [ [], [] ];
-    }
-
-    /*
-     * Calculate the sum for each of the parts necessary.
-     */
-    for (let v = 0; v < values_length; v++) {
-        let x = parseFloat(values_x[v]);
-        let y = parseFloat(values_y[v]);
-        sum_x += x;
-        sum_y += y;
-        sum_xx += x*x;
-        sum_xy += x*y;
-        count++;
-    }
-    console.log(sum_x)
-    console.log(sum_y)
-    /*
-     * Calculate m and b for the formular:
-     * y = x * m + b
-     */
-    let m = parseFloat((count*sum_xy - sum_x*sum_y) / (count*sum_xx - sum_x*sum_x));
-    let b = parseFloat((sum_y/count) - (m*sum_x)/count);
-
-    /*
-     * We will make the x and y result line now
-     */
-    let result_values_x = [];
-    let result_values_y = [];
-
-    for (let v = 0; v < values_length; v++) {
-        x = values_x[v];
-        y = x * m + b;
-        result_values_x.push(x);
-        result_values_y.push(y);
-    }
-    console.log(result_values_y)
-    return zip(result_values_x, result_values_y);
-}
-
         // set the dimensions and margins of the graph
-        const margin = {top: 60, right: 20, bottom: 20, left: 20},
+        const margin = {top: 60, right: 20, bottom: 20, left: 30},
             width = 920 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
 
@@ -104,20 +42,20 @@
 
 
         //Read the data
-        d3.csv("/data/klimaat_tzw.csv").then( (data)=> {
+        d3.csv("./data/klimaat_tzw.csv").then((data) => {
 
             // List of groups (here I have one group per column)
-            const allGroup = [...new Set(data.map(d=>d.year))]
+            const allGroup = [...new Set(data.map(d => d.year))]
             // Reformat the data: we need an array of arrays of {x, y} tuples
-            const dataReady = allGroup.map((grpName)=> { // .map allows to do something for each element of the list
+            const dataReady = allGroup.map((grpName) => { // .map allows to do something for each element of the list
                 return {
                     name: grpName,
-                    values: data.filter(d=>d.year===grpName).map( (d)=> {
+                    values: data.filter(d => d.year === grpName).map((d) => {
                         return {time: d.month, value: d.value};
                     })
                 };
             });
-            
+
             let extent = d3.extent(data.map(d => d.month));
 
             // A color scale: one color for each group
@@ -153,7 +91,7 @@
             svg.selectAll("myLines")
                 .data(dataReady)
                 .join("path")
-                .attr("class", d => d.name)
+                .attr("class", d => 'c' + d.name.toString())
                 .attr("d", d => line(d.values))
                 .attr("stroke", d => myColor(d.name))
                 .style("stroke-width", 2)
@@ -166,7 +104,7 @@
                 .data(dataReady)
                 .join('g')
                 .style("fill", d => myColor(d.name))
-                .attr("class", d => d.name)
+                .attr("class", d => 'c' + d.name.toString())
                 // Second we need to enter in the 'values' part of this group
                 .selectAll("myPoints")
                 .data(d => d.values)
@@ -176,40 +114,26 @@
                 .attr("r", 3)
                 .attr("stroke", "white")
 
-
-            // Add a label at the end of each line
-            svg
-                .selectAll("myLabels")
-                .data(dataReady)
-                .join('g')
-                .append("text")
-                .attr("class", d => d.name)
-                .datum(d => {
-                    return {name: d.name, value: d.values[d.values.length - 1]};
-                }) // keep only the last value of each time series
-                .attr("transform", d => `translate(${x(d.value.time)},${y(d.value.value)})`) // Put the text at the position of the last point
-                .attr("x", 12) // shift the text a bit more right
-                .text(d => d.name)
-                .style("fill", d => myColor(d.name))
-                .style("font-size", 15)
-
             // Add a legend (interactive)
             svg
                 .selectAll("myLegend")
                 .data(dataReady)
                 .join('g')
                 .append("text")
-                .attr('x', (d, i) => 30 + i * 60)
-                .attr('y', 30)
+                .attr('x', (_, i) => margin.left + 5 + (i%15) * 40)
+                .attr('y',(_, i) => {
+                    return 30 + Math.floor(i/15)*30
+                } )
+                .attr('class', d => "label" + d.name)
                 .text(d => d.name)
                 .style("fill", d => myColor(d.name))
-                .style("font-size", 15)
+                .style("font-size", 10)
                 .on("click", function (event, d) {
                     // is the element currently visible ?
-                    currentOpacity = d3.selectAll("." + d.name).style("opacity")
+                    let currentOpacity = d3.selectAll(".c" + d.name).style("opacity")
                     // Change the opacity: from 0 to 1 or from 1 to 0
-                    d3.selectAll("." + d.name).transition().style("opacity", currentOpacity == 1 ? 0 : 1)
-
+                    d3.selectAll(".c" + d.name).transition().style("opacity", currentOpacity == 1 ? 0 : 1)
+                    //d3.selectAll(".c" + d.name).transition().style()
                 })
         })
     </script>

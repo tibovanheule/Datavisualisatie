@@ -1,11 +1,9 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="utf-8">
-
-    <!-- Load d3.js -->
-    <script src="https://d3js.org/d3.v6.js"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
           integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
@@ -13,7 +11,8 @@
     <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
             integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
             crossorigin=""></script>
-
+    <link rel="stylesheet" href="./files/MarkerCluster.css"/>
+    <script type="application/javascript" src="./files/leaflet.markercluster.js"></script>
     <style>
         #mapid {
             height: 100vh;
@@ -21,7 +20,38 @@
 
         body {
             margin: 0;
+            height: 100vh;
+            overflow: hidden;
         }
+
+        .mycluster {
+            color: white;
+            width: 40px;
+            height: 40px;
+            background-color: rgb(8, 48, 107);
+            text-align: center;
+            font-size: 2em;
+            padding: 5%;
+            border-radius: 4px;
+            border: 1px solid black;
+        }
+
+        .bouy {
+            width: 40px;
+            height: 40px;
+        }
+
+        .bouy-text {
+            background: rgb(8, 48, 107);
+            color: white;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: .8em;
+            width: max-content;
+            word-break: break-all;
+            display: block;
+        }
+
     </style>
     <link rel="apple-touch-icon" sizes="180x180" href="/files/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/files/favicon-32x32.png">
@@ -31,66 +61,83 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-config" content="/files/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
+    <title>Locaties</title>
 </head>
+<body>
 <!-- Create an element where the map will take place -->
 <div id="mapid"></div>
 
+</body>
+<footer>
+    <script type="module">
+        const buoyIcon = (name) => new L.DivIcon({
+            className: 'my-div-icon',
+            html: `<img class="bouy" src="./buoy.png"/><span class="bouy-text">${name}</span>`,
+            iconSize: L.point(40, 40)
+        });
 
-<script type="module">
-    const buoyIcon = L.icon({
-        iconUrl: 'buoy.png',
-        iconSize: [20, 20],
-        iconAnchor: [0, 0],
-    });
-    const data = await fetch("/api/locations").then((d) => d.json());
-    // mapid is the id of the div where the map will appear
-    const map = L
-        .map('mapid')
-        .setView([51.2727669, 2.9650749], 10);   // center position + zoom
-    // Add a tile to the map = a background. Comes from OpenStreetmap
-    L.tileLayer(
-        'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg', {}).addTo(map);
+        const data = await fetch("/api/locations").then((d) => d.json());
+        // mapid is the id of the div where the map will appear
+        const map = L
+            .map('mapid')
+            .setView([51.2727669, 2.9650749], 10);   // center position + zoom
+        // Add a tile to the map = a background. Comes from OpenStreetmap
+        L.tileLayer(
+            'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg', {}).addTo(map);
 
-    L.tileLayer.wms('https://bathytest.agentschapmdk.be/geoserver/gnwms/wms/?', {
-        layers: 'NamedPlace',
-        styles: 'GN_Source',
-        format: 'image/png',
-        transparent: true,
-        opacity: 0.5
-    }).addTo(map);
-
-    // Add a svg layer to the map
-    L.svg().addTo(map);
-
-    // Select the svg area and add circles:
-    data.forEach(d => {
-        L.marker([d.latitude, d.longitude], {
-            icon: buoyIcon,
-            keyboard: false,
-
+        L.tileLayer.wms('https://bathytest.agentschapmdk.be/geoserver/gnwms/wms/?', {
+            layers: 'NamedPlace',
+            styles: 'GN_Source',
+            format: 'image/png',
+            transparent: true,
+            opacity: 0.3
         }).addTo(map);
-    });
 
-    d3.select("#mapid")
-        .select("svg")
-        .selectAll("mytext")
-        .data(data)
-        .join("text")
-        .attr("dx", d => map.latLngToLayerPoint([d.latitude, d.longitude]).x)
-        .attr("dy", d => map.latLngToLayerPoint([d.latitude, d.longitude]).y)
-        .text(d => d.name);
+        // Add a svg layer to the map
+        L.svg().addTo(map);
 
-    // Function that update circle position if something change
-    function update() {
-        d3.selectAll("circle")
-            .attr("cx", d => map.latLngToLayerPoint([d.latitude, d.longitude]).x)
-            .attr("cy", d => map.latLngToLayerPoint([d.latitude, d.longitude]).y)
+        // Select the svg area and add circles:
+        let markers = L.markerClusterGroup({
+            maxClusterRadius: 80,
+            iconCreateFunction: (cluster) => {
+                let n = cluster.getChildCount();
+                return L.divIcon({html: n, className: 'mycluster', iconSize: L.point(40, 40)});
+            },
+            spiderfyOnMaxZoom: true, showCoverageOnHover: true, zoomToBoundsOnClick: false
+        });
 
-        d3.selectAll("text")
-            .attr("dx", d => map.latLngToLayerPoint([d.latitude, d.longitude]).x)
-            .attr("dy", d => map.latLngToLayerPoint([d.latitude, d.longitude]).y)
-    }
+        data.forEach(d => {
+            markers.addLayer(L.marker([d.latitude, d.longitude], {
+                icon: buoyIcon(d.name),
+                keyboard: false,
 
-    // If the user change the map (zoom or drag), I update circle position:
-    map.on("moveend", update);
-</script>
+            }));
+        });
+        map.addLayer(markers);
+
+        let shownLayer, polygon;
+
+        function removePolygon() {
+            if (shownLayer) {
+                shownLayer.setOpacity(1);
+                shownLayer = null;
+            }
+            if (polygon) {
+                map.removeLayer(polygon);
+                polygon = null;
+            }
+        };
+
+        markers.on('clustermouseover', function (a) {
+            removePolygon();
+
+            a.layer.setOpacity(0.2);
+            shownLayer = a.layer;
+            polygon = L.polygon(a.layer.getConvexHull());
+            map.addLayer(polygon);
+        });
+        markers.on('clustermouseout', removePolygon);
+        map.on('zoomend', removePolygon);
+    </script>
+</footer>
+</html>

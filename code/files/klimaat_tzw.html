@@ -56,19 +56,19 @@
                 };
             });
 
-            let extent = d3.extent(data.map(d => d.month));
-
             // A color scale: one color for each group
             const myColor = d3.scaleSequential(d3.interpolateBlues)
                 .domain(d3.extent(allGroup))
 
             // Add X axis --> it is a date format
-            const x = d3.scaleTime()
-                .domain(extent)
-                .range([margin.left, width + margin.left]);
+            const x = d3.scaleBand()
+                .domain(data.map(d => d.month).sort((a, b) => {
+                    return a - b;
+                }))
+                .range([margin.left, width - margin.left]);
             svg.append("g")
                 .attr("transform", `translate(0, ${height + margin.top})`)
-                .call(d3.axisBottom(x).tickSizeOuter(0));
+                .call(d3.axisBottom(x));
 
             // Add Y axis
             const y = d3.scaleLinear()
@@ -86,7 +86,7 @@
 
             // Add the lines
             const line = d3.line()
-                .x(d => x(d.time))
+                .x(d => x(d.time)+margin.left)
                 .y(d => y(d.value))
             svg.selectAll("myLines")
                 .data(dataReady)
@@ -109,7 +109,7 @@
                 .selectAll("myPoints")
                 .data(d => d.values)
                 .join("circle")
-                .attr("cx", d => x(d.time))
+                .attr("cx", d => x(d.time)+margin.left)
                 .attr("cy", d => y(d.value))
                 .attr("r", 3)
                 .attr("stroke", "white")
@@ -120,10 +120,10 @@
                 .data(dataReady)
                 .join('g')
                 .append("text")
-                .attr('x', (_, i) => margin.left + 5 + (i%15) * 40)
-                .attr('y',(_, i) => {
-                    return 30 + Math.floor(i/15)*30
-                } )
+                .attr('x', (_, i) => margin.left + 5 + (i % 15) * 40)
+                .attr('y', (_, i) => {
+                    return 30 + Math.floor(i / 15) * 30
+                })
                 .attr('class', d => "label" + d.name)
                 .text(d => d.name)
                 .style("fill", d => myColor(d.name))

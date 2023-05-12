@@ -1,27 +1,29 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-
-<!-- Load d3.js -->
-<script src="https://d3js.org/d3.v6.js"></script>
-
-<!-- Create a div where the graph will take place -->
-<input type="text" id="series_id_input"><button onclick="get()">Toon beschikbaarheden</button>
+<head>
+    <meta charset="utf-8">
+    <script async src="https://d3js.org/d3.v6.js"></script>
+    <title>Beschikbaarheden</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<p>Provide the series_id</p>
+<input type="text" id="series_id_input">
+<button onclick="get()">Toon beschikbaarheden</button>
 <div id="my_dataviz"></div>
 
 <script>
     function get() {
         // reset!
-        document.getElementById("my_dataviz").innerHTML="";
+        document.getElementById("my_dataviz").innerHTML = "";
         // set the dimensions and margins of the graph
-        const margin = {top: 80, right: 25, bottom: 30, left: 60},
-            width = 650 - margin.left - margin.right,
-            height = 650 - margin.top - margin.bottom;
+        const margin = {top: 10, right: 60, bottom: 10, left: 60},
+            width = 920 - margin.left - margin.right,
+            height = 300 - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
         const svg = d3.select("#my_dataviz")
             .append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
+            .attr("viewBox", [0, 0, width, height + margin.top + margin.bottom])
             .append("g")
             .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
@@ -45,10 +47,10 @@
                 }
             );
             const myVars = Array.from(new Set(data.map(d => d.year)));
-            console.log(myGroups)
+
             // Build X scales and axis:
             const x = d3.scaleBand()
-                .range([0, width])
+                .range([0, width - margin.left])
                 .domain(myGroups)
                 .padding(0.05);
             svg.append("g")
@@ -59,7 +61,7 @@
 
             // Build Y scales and axis:
             const y = d3.scaleBand()
-                .range([height, 0])
+                .range([height - margin.top, 0])
                 .domain(myVars)
                 .padding(0.05);
             svg.append("g")
@@ -94,8 +96,9 @@
             const mousemove = function (event, d) {
                 tooltip
                     .html("The exact value of<br>this cell is: " + d.result)
-                    .style("left", (event.x) / 2 + "px")
-                    .style("top", (event.y) / 2 + "px")
+                    .style("left", (event.x) + "px")
+                    .style("top", (event.y) + "px")
+                    .style("position", "absolute");
             }
             const mouseleave = function (event, d) {
                 tooltip
@@ -131,24 +134,6 @@
                 .on("mousemove", mousemove)
                 .on("mouseleave", mouseleave)
         })
-
-        // Add title to graph
-        svg.append("text")
-            .attr("x", 0)
-            .attr("y", -50)
-            .attr("text-anchor", "left")
-            .style("font-size", "25px")
-            .text("Beschikbaarheden");
-
-        // Add subtitle to graph
-        svg.append("text")
-            .attr("x", 0)
-            .attr("y", -20)
-            .attr("text-anchor", "left")
-            .style("font-size", "14px")
-            .style("fill", "grey")
-            .style("max-width", 400)
-            .text("Grafiek geeft een aan als de data beschikbaar is in een bepaalde periode.");
     }
 
 </script>

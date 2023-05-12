@@ -18,7 +18,6 @@
         .orange { background-color: #c2b049;color: white;}
         .modal iframe {
             width: 100%;
-            height: 50vh;
             border: none;
         }
     </style>
@@ -27,16 +26,57 @@
 <img src="./files/logo.png" style="margin: 2% auto;width: 20vw;display: block;"/>
 
 <div class="content">
-    <div class="modal">
+    <div class="modal orange">
         <h1>Hydro Meteo Atlas Geanalyseerd</h1>
     </div>
-    <div class="modal orange">
+    <div class="modal">
+        <iframe src="./locations.html" title="Getijden"></iframe>
+    </div>
+    <div class="modal">
         <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Omnis laborum corporis doloribus, hic labore illum fuga animi assumenda perferendis nesciunt modi voluptate ipsum esse ab accusamus ipsa eaque natus doloremque.</p>
     </div>
 
     <div class="modal">
         <iframe src="./getij.html" title="Getijden"></iframe>
     </div>
+    <div class="modal">
+        <iframe src="./wind_en_golven.html" title="Getijden"></iframe>
+    </div>
+    <div class="modal orange">
+        <h1>klimaat</h1>
+    </div>
 </div>
 </body>
+<footer>
+    <script>
+        function fit() {
+    var iframes = document.querySelectorAll("iframe")
+
+    for(var id = 0; id < iframes.length; id++) {
+        var win = iframes[id].contentWindow
+        var doc = win.document
+        var html = doc.documentElement
+        var body = doc.body
+        var ifrm = iframes[id] // or win.frameElement
+
+        if(body) {
+            body.style.overflowX = "hidden" // scrollbar-jitter fix
+            body.style.overflowY = "hidden"
+        }
+        if(html) {
+            html.style.overflowX = "hidden" // scrollbar-jitter fix
+            html.style.overflowY = "hidden"
+            var style = win.getComputedStyle(html)
+            ifrm.width = parseInt(style.getPropertyValue("width")) // round value
+            ifrm.height = parseInt(style.getPropertyValue("height"))
+        }
+    }
+
+    requestAnimationFrame(fit)
+}
+
+addEventListener("load", requestAnimationFrame.bind(this, fit))
+addEventListener("resize", requestAnimationFrame.bind(this, fit))
+    </script>
+</footer>
 </html>

@@ -12,14 +12,17 @@
             cursor: move;
         }
     </style>
-    <link rel="apple-touch-icon" sizes="180x180" href="/files/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/files/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/files/favicon-16x16.png">
-    <link rel="manifest" href="/files/site.webmanifest">
-    <link rel="shortcut icon" href="/files/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+    <link rel="manifest" href="./site.webmanifest">
+    <link rel="shortcut icon" href="./favicon.ico">
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-config" content="/files/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
+        <script src="https://cdn.jsdelivr.net/npm/d3-color@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-interpolate@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-scale-chromatic@3"></script>
 </head>
 <body>
 <div id="tzw_diep_vs_ondiep"></div>
@@ -29,7 +32,7 @@
     <script>
 
         // set the dimensions and margins of the graph
-        const margin = {top: 60, right: 20, bottom: 20, left: 20},
+        const margin = {top: 60, right: 20, bottom: 20, left: 30},
             width = 920 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
 
@@ -40,115 +43,79 @@
 
 
         //Read the data
-        d3.csv("/data/diepvsondiep.csv").then(function (data) {
+        d3.csv("./data/diepvsondiep.csv").then(function (data) {
 
-            // List of groups (here I have one group per column)
-            const allGroup = ["Ondiep", "Diep"]
+            // List of subgroups = header of the csv files = soil condition here
+            const subgroups = ["Ondiep", "Diep"]
 
-            // Reformat the data: we need an array of arrays of {x, y} tuples
-            const dataReady = allGroup.map(function (grpName) { // .map allows to do something for each element of the list
-                return {
-                    name: grpName,
-                    values: data.map(function (d) {
-                        if (grpName === "Ondiep") {
-                            return {time: new Date(d.year, d.month - 1), value: d.mean_x};
-                        }
-                        return {time: new Date(d.year, d.month - 1), value: d.mean_y};
-                    })
-                };
-            });
-            let extent = d3.extent(data.map(d => new Date(d.year, d.month - 1)))
+            // List of groups = species here = value of the first column called group -> I show them on the X axis
+            const groups = data.map(d => new Date(d.year, d.month - 1));
 
-            // A color scale: one color for each group
-            const myColor = d3.scaleOrdinal()
-                .domain(allGroup)
-                .range(d3.schemeSet2);
+            data = data.map((d) => {
+                return subgroups.map((key)=> {
+                    if (key === "Ondiep") {
+                        return {group: key, value: d.mean_x, key: new Date(d.year, d.month - 1)};
+                    }
+                    return {group: key, value: d.mean_y, key: new Date(d.year, d.month - 1)};
+                });
+            }).flat()
 
-            // Add X axis --> it is a date format
+            // Add X axis
             const x = d3.scaleTime()
-                .domain(extent)
-                .range([margin.left, width + margin.left]);
+                .domain(d3.extent(groups))
+                .range([margin.left, width + margin.left])
             svg.append("g")
                 .attr("transform", `translate(0, ${height + margin.top})`)
-                .call(d3.axisBottom(x).tickSizeOuter(0));
+                .call(d3.axisBottom(x));
 
             // Add Y axis
             const y = d3.scaleLinear()
-                .domain([0, 22])
+                .domain([0,20])
                 .range([height + margin.top, margin.top]);
             svg.append("g")
                 .attr("transform", `translate(${margin.left}, 0)`)
-                .call(d3.axisLeft(y).ticks(null, "s"))
-                .call(g => g.select(".domain").remove())
-                .call(g => g.select(".tick:last-of-type text").clone()
-                    .attr("x", 3)
-                    .attr("text-anchor", "start")
-                    .attr("font-weight", "bold")
-                );
+                .call(d3.axisLeft(y));
 
-            // Add the lines
-            const line = d3.line()
-                .x(d => x(d.time))
-                .y(d => y(d.value))
-            svg.selectAll("myLines")
-                .data(dataReady)
-                .join("path")
-                .attr("class", d => d.name)
-                .attr("d", d => line(d.values))
-                .attr("stroke", d => myColor(d.name))
-                .style("stroke-width", 4)
-                .style("fill", "none")
+            // Another scale for subgroup position?
+            const xSubgroup = d3.scaleBand()
+                .domain(subgroups)
+                .range([0, width / data.length])
+                .padding([0.05])
 
-            // Add the points
-            svg
-                // First we need to enter in a group
-                .selectAll("myDots")
-                .data(dataReady)
-                .join('g')
-                .style("fill", d => myColor(d.name))
-                .attr("class", d => d.name)
-                // Second we need to enter in the 'values' part of this group
-                .selectAll("myPoints")
-                .data(d => d.values)
-                .join("circle")
-                .attr("cx", d => x(d.time))
-                .attr("cy", d => y(d.value))
-                .attr("r", 5)
-                .attr("stroke", "white")
+            // color palette = one color per subgroup
+            const color = d3.scaleOrdinal(d3.schemeBlues[3])
+                .domain(subgroups)
 
+            // Show the bars
+            svg.append("g")
+                .selectAll("rect")
+                .data(data)
+                .join("rect")
+                .attr("class",d=>d.group)
+                .attr("transform", d => `translate(${x(d.key)}, 0)`)
+                .attr("x", d => xSubgroup(d.group))
+                .attr("y", d => y(d.value))
+                .attr("width", xSubgroup.bandwidth())
+                .attr("height", d => height - y(d.value) + margin.top)
+                .attr("fill", d => color(d.group));
 
-            // Add a label at the end of each line
-            svg
-                .selectAll("myLabels")
-                .data(dataReady)
-                .join('g')
-                .append("text")
-                .attr("class", d => d.name)
-                .datum(d => {
-                    return {name: d.name, value: d.values[d.values.length - 1]};
-                }) // keep only the last value of each time series
-                .attr("transform", d => `translate(${x(d.value.time)},${y(d.value.value)})`) // Put the text at the position of the last point
-                .attr("x", 12) // shift the text a bit more right
-                .text(d => d.name)
-                .style("fill", d => myColor(d.name))
-                .style("font-size", 15)
 
             // Add a legend (interactive)
             svg
                 .selectAll("myLegend")
-                .data(dataReady)
+                .data(subgroups)
                 .join('g')
                 .append("text")
                 .attr('x', (d, i) => 30 + i * 60)
                 .attr('y', 30)
-                .text(d => d.name)
-                .style("fill", d => myColor(d.name))
+                .text(d => d)
+                .style("fill", d => color(d))
                 .style("font-size", 15)
-                .on("click", function (event, d) {
+                .on("click", (event, d) => {
                     // is the element currently visible ?
-                    currentOpacity = d3.selectAll("." + d.name).style("opacity")
+                    let currentOpacity = d3.selectAll("." + d).style("opacity")
                     // Change the opacity: from 0 to 1 or from 1 to 0
-                    d3.selectAll("." + d.name).transition().style("opacity", currentOpacity == 1 ? 0 : 1)
+                    d3.selectAll("." + d).transition().style("opacity", currentOpacity == 1 ? 0 : 1)
 
                 })
         })

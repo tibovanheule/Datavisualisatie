@@ -140,6 +140,14 @@ def wind_en_golven_html():
     return send_file('files/wind_en_golven.html')
 
 
+@app.route('/diep vs ondiep')
+def diep_vs_ondiep_html():
+    """!
+    Return any file with the given path.
+    """
+    return send_file('files/diep_vs_ondiep_tzw.html')
+
+
 @app.route('/<path:path>')
 def files(path):
     """!

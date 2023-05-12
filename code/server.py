@@ -154,7 +154,10 @@ def files(path):
     Return any file with the given path.
     """
     base_loc = Path("./files")
+    if (Path(path)).is_file():
+        return send_file(Path(path))
     files = list(base_loc.glob(path+"*"))
+    print(files)
     if len(files) >0:
         return send_file(files[0])
     if (base_loc/path).is_dir():

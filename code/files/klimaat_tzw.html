@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:;base64,=">
+    <title>klimaattrend tzw</title>
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <style>
+        #tzw_diep_vs_ondiep > svg:hover {
+            cursor: move;
+        }
+    </style>
+    <link rel="apple-touch-icon" sizes="180x180" href="/files/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/files/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/files/favicon-16x16.png">
+    <link rel="manifest" href="/files/site.webmanifest">
+    <link rel="shortcut icon" href="/files/favicon.ico">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-config" content="/files/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <script src="https://cdn.jsdelivr.net/npm/d3-color@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-interpolate@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-scale-chromatic@3"></script>
+</head>
+<body>
+<div id="tzw_klimaat"></div>
+
+</body>
+<footer>
+    <script>
+        const zip = (a, b) => a.map((k, i) => [k, b[i]]);
+
+        function findLineByLeastSquares(values_x, values_y) {
+    let sum_x = 0;
+    let sum_y = 0;
+    let sum_xy = 0;
+    let sum_xx = 0;
+    let count = 0;
+
+    /*
+     * We'll use those variables for faster read/write access.
+     */
+    let values_length = values_x.length;
+
+    if (values_length != values_y.length) {
+        throw new Error('The parameters values_x and values_y need to have same size!');
+    }
+
+    /*
+     * Nothing to do.
+     */
+    if (values_length === 0) {
+        return [ [], [] ];
+    }
+
+    /*
+     * Calculate the sum for each of the parts necessary.
+     */
+    for (let v = 0; v < values_length; v++) {
+        let x = parseFloat(values_x[v]);
+        let y = parseFloat(values_y[v]);
+        sum_x += x;
+        sum_y += y;
+        sum_xx += x*x;
+        sum_xy += x*y;
+        count++;
+    }
+    console.log(sum_x)
+    console.log(sum_y)
+    /*
+     * Calculate m and b for the formular:
+     * y = x * m + b
+     */
+    let m = parseFloat((count*sum_xy - sum_x*sum_y) / (count*sum_xx - sum_x*sum_x));
+    let b = parseFloat((sum_y/count) - (m*sum_x)/count);
+
+    /*
+     * We will make the x and y result line now
+     */
+    let result_values_x = [];
+    let result_values_y = [];
+
+    for (let v = 0; v < values_length; v++) {
+        x = values_x[v];
+        y = x * m + b;
+        result_values_x.push(x);
+        result_values_y.push(y);
+    }
+    console.log(result_values_y)
+    return zip(result_values_x, result_values_y);
+}
+
+        // set the dimensions and margins of the graph
+        const margin = {top: 60, right: 20, bottom: 20, left: 20},
+            width = 920 - margin.left - margin.right,
+            height = 400 - margin.top - margin.bottom;
+
+        // append the svg object to the body of the page
+        const svg = d3.select("#tzw_klimaat")
+            .append("svg")
+            .attr("viewBox", [0, 0, width, height + margin.top + margin.bottom]);
+
+
+        //Read the data
+        d3.csv("/data/klimaat_tzw.csv").then( (data)=> {
+
+            // List of groups (here I have one group per column)
+            const allGroup = [...new Set(data.map(d=>d.year))]
+            // Reformat the data: we need an array of arrays of {x, y} tuples
+            const dataReady = allGroup.map((grpName)=> { // .map allows to do something for each element of the list
+                return {
+                    name: grpName,
+                    values: data.filter(d=>d.year===grpName).map( (d)=> {
+                        return {time: d.month, value: d.value};
+                    })
+                };
+            });
+            
+            let extent = d3.extent(data.map(d => d.month));
+
+            // A color scale: one color for each group
+            const myColor = d3.scaleSequential(d3.interpolateBlues)
+                .domain(d3.extent(allGroup))
+
+            // Add X axis --> it is a date format
+            const x = d3.scaleTime()
+                .domain(extent)
+                .range([margin.left, width + margin.left]);
+            svg.append("g")
+                .attr("transform", `translate(0, ${height + margin.top})`)
+                .call(d3.axisBottom(x).tickSizeOuter(0));
+
+            // Add Y axis
+            const y = d3.scaleLinear()
+                .domain([0, 22])
+                .range([height + margin.top, margin.top]);
+            svg.append("g")
+                .attr("transform", `translate(${margin.left}, 0)`)
+                .call(d3.axisLeft(y).ticks(null, "s"))
+                .call(g => g.select(".domain").remove())
+                .call(g => g.select(".tick:last-of-type text").clone()
+                    .attr("x", 3)
+                    .attr("text-anchor", "start")
+                    .attr("font-weight", "bold")
+                );
+
+            // Add the lines
+            const line = d3.line()
+                .x(d => x(d.time))
+                .y(d => y(d.value))
+            svg.selectAll("myLines")
+                .data(dataReady)
+                .join("path")
+                .attr("class", d => d.name)
+                .attr("d", d => line(d.values))
+                .attr("stroke", d => myColor(d.name))
+                .style("stroke-width", 2)
+                .style("fill", "none")
+
+            // Add the points
+            svg
+                // First we need to enter in a group
+                .selectAll("myDots")
+                .data(dataReady)
+                .join('g')
+                .style("fill", d => myColor(d.name))
+                .attr("class", d => d.name)
+                // Second we need to enter in the 'values' part of this group
+                .selectAll("myPoints")
+                .data(d => d.values)
+                .join("circle")
+                .attr("cx", d => x(d.time))
+                .attr("cy", d => y(d.value))
+                .attr("r", 3)
+                .attr("stroke", "white")
+
+
+            // Add a label at the end of each line
+            svg
+                .selectAll("myLabels")
+                .data(dataReady)
+                .join('g')
+                .append("text")
+                .attr("class", d => d.name)
+                .datum(d => {
+                    return {name: d.name, value: d.values[d.values.length - 1]};
+                }) // keep only the last value of each time series
+                .attr("transform", d => `translate(${x(d.value.time)},${y(d.value.value)})`) // Put the text at the position of the last point
+                .attr("x", 12) // shift the text a bit more right
+                .text(d => d.name)
+                .style("fill", d => myColor(d.name))
+                .style("font-size", 15)
+
+            // Add a legend (interactive)
+            svg
+                .selectAll("myLegend")
+                .data(dataReady)
+                .join('g')
+                .append("text")
+                .attr('x', (d, i) => 30 + i * 60)
+                .attr('y', 30)
+                .text(d => d.name)
+                .style("fill", d => myColor(d.name))
+                .style("font-size", 15)
+                .on("click", function (event, d) {
+                    // is the element currently visible ?
+                    currentOpacity = d3.selectAll("." + d.name).style("opacity")
+                    // Change the opacity: from 0 to 1 or from 1 to 0
+                    d3.selectAll("." + d.name).transition().style("opacity", currentOpacity == 1 ? 0 : 1)
+
+                })
+        })
+    </script>
+</footer>
+</html>

@@ -12,10 +12,38 @@
     <meta name="msapplication-config" content="browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
     <style>
-        body{background:#f5f5f5 url(./background-pattern.png);color:#222;cursor:auto;font-family:flanders,Helvetica,Roboto,Arial,sans-serif;font-style:normal;font-weight:400;line-height:1.5;margin:0;padding:0;position:relative}
-        .modal {background-color: #eceeef;text-align: center; border-radius: 4px;margin: 2% 0; width: 98%;padding:1%}
-        .content {width: 70vw;margin: 2% 15vw;}
-        .orange { background-color: #c2b049;color: white;}
+        body {
+            background: #f5f5f5 url(./background-pattern.png);
+            color: #222;
+            cursor: auto;
+            font-family: flanders, Helvetica, Roboto, Arial, sans-serif;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+            position: relative
+        }
+
+        .modal {
+            background-color: #eceeef;
+            text-align: center;
+            border-radius: 4px;
+            margin: 2% 0;
+            width: 98%;
+            padding: 1%
+        }
+
+        .content {
+            width: 70vw;
+            margin: 2% 15vw;
+        }
+
+        .orange {
+            background-color: #c2b049;
+            color: white;
+        }
+
         .modal iframe {
             width: 100%;
             border: none;
@@ -38,28 +66,45 @@
     <div class="modal" style="text-align: left">
         <p>
             De meetpalen en boeien op zee zijn uitgerust met geavanceerde sensoren en meettoestellen.
-Die verzamelen belangrijke gegevens zoals windsnelheid en -richting, zichtbaarheid, temperatuur, getij, golfhoogte en -richting.
-De getijstations, meteoparken en meetlocaties langs de kust meten daar de: wind, getij, stroming,verschillende andere meteoparameters.
-Alle data van het meetnet komt via een computernetwerk in het datacenter in Oostende terecht. Van daaruit wordt het verdeeld naar de verschillende gebruikers. Het datacenter verwerkt vierentwintig uur per dag en zeven dagen op zeven alle ingewonnen informatie.
-Zeevarenden hebben zo onmiddellijk toegang tot de actuele informatie om hun activiteit veilig te laten verlopen.
+            Die verzamelen belangrijke gegevens zoals windsnelheid en -richting, zichtbaarheid, temperatuur, getij,
+            golfhoogte en -richting.
+            De getijstations, meteoparken en meetlocaties langs de kust meten daar de: wind, getij,
+            stroming,verschillende andere meteoparameters.
+            Alle data van het meetnet komt via een computernetwerk in het datacenter in Oostende terecht. Van daaruit
+            wordt het verdeeld naar de verschillende gebruikers. Het datacenter verwerkt vierentwintig uur per dag en
+            zeven dagen op zeven alle ingewonnen informatie.
+            Zeevarenden hebben zo onmiddellijk toegang tot de actuele informatie om hun activiteit veilig te laten
+            verlopen.
         </p>
-<ul>
-                    <li>6 meetpalen</li>
-                    <li>16 golfmeetboeien</li>
-                    <li>5 getijdestations </li>
-                    <li>3 meteoparken </li>
-                    <li>4 windmeetlocaties aan de kust </li>
-                    <li>3 stroommeetlocaties in de havens</li>
-                </ul>
+        <ul>
+            <li>6 meetpalen</li>
+            <li>16 golfmeetboeien</li>
+            <li>5 getijdestations</li>
+            <li>3 meteoparken</li>
+            <li>4 windmeetlocaties aan de kust</li>
+            <li>3 stroommeetlocaties in de havens</li>
+        </ul>
     </div>
-
+    <div class="modal orange">
+        <h3>Getijden</h3>
+    </div>
     <div class="modal">
         <iframe src="getij.html" title="Getijden"></iframe>
+    </div>
+    <div class="modal orange">
+        <h3>Golftheorie</h3>
     </div>
     <div class="modal">
         <iframe src="wind_en_golven.html" title="Getijden"></iframe>
     </div>
-    <div class="modal orange">
+    <div class="modal" style="text-align: left">
+        <p>De voornaamste kracht welke de vorming van golven op een wateroppervlak veroorzaakt is de wind. Onderhevig
+            aan een windveld is het golfpatroon zeer complex.
+            Eens de golven het opwekkende windveld verlaten hebben zijn ze enkel nog onderhevig aan de zwaartekracht en
+            vertonen een meer regelmatig karakter, welke echter niet theoretisch kan beschreven worden. </p>
+
+    </div>
+<div class="modal orange">
         <h3>klimaat</h3>
     </div>
 </div>
@@ -67,33 +112,32 @@ Zeevarenden hebben zo onmiddellijk toegang tot de actuele informatie om hun acti
 <footer>
     <script>
         function fit() {
-    var iframes = document.querySelectorAll("iframe")
+            let iframes = document.querySelectorAll("iframe")
 
-    for(var id = 0; id < iframes.length; id++) {
-        var win = iframes[id].contentWindow
-        var doc = win.document
-        var html = doc.documentElement
-        var body = doc.body
-        var ifrm = iframes[id] // or win.frameElement
+            for (let ifrm of iframes) {
+                let win = ifrm.contentWindow
+                let doc = win.document
+                let html = doc.documentElement
+                let body = doc.body
 
-        if(body) {
-            body.style.overflowX = "hidden" // scrollbar-jitter fix
-            body.style.overflowY = "hidden"
+                if (body) {
+                    body.style.overflowX = "hidden" // scrollbar-jitter fix
+                    body.style.overflowY = "hidden"
+                }
+                if (html) {
+                    html.style.overflowX = "hidden" // scrollbar-jitter fix
+                    html.style.overflowY = "hidden"
+                    let style = win.getComputedStyle(html)
+                    ifrm.width = parseInt(style.getPropertyValue("width")) // round value
+                    ifrm.height = parseInt(style.getPropertyValue("height"))
+                }
+            }
+
+            requestAnimationFrame(fit)
         }
-        if(html) {
-            html.style.overflowX = "hidden" // scrollbar-jitter fix
-            html.style.overflowY = "hidden"
-            var style = win.getComputedStyle(html)
-            ifrm.width = parseInt(style.getPropertyValue("width")) // round value
-            ifrm.height = parseInt(style.getPropertyValue("height"))
-        }
-    }
 
-    requestAnimationFrame(fit)
-}
-
-addEventListener("load", requestAnimationFrame.bind(this, fit))
-addEventListener("resize", requestAnimationFrame.bind(this, fit))
+        addEventListener("load", requestAnimationFrame.bind(this, fit))
+        addEventListener("resize", requestAnimationFrame.bind(this, fit))
     </script>
 </footer>
 </html>

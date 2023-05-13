@@ -25,7 +25,9 @@
     <script src="https://cdn.jsdelivr.net/npm/d3-scale-chromatic@3"></script>
 </head>
 <body>
-<div id="tzw_klimaat"></div>
+<button onclick="show_all()">Toon alles</button>
+<button onclick="hide_all()">Verberg alles</button>
+<div id="tzw_klimaat" style="display: block"></div>
 
 </body>
 <footer>
@@ -39,15 +41,15 @@
         const svg = d3.select("#tzw_klimaat")
             .append("svg")
             .attr("viewBox", [0, 0, width, height + margin.top + margin.bottom]);
-
+        let groups = undefined;
 
         //Read the data
         d3.csv("./data/klimaat_tzw.csv").then((data) => {
 
             // List of groups (here I have one group per column)
-            const allGroup = [...new Set(data.map(d => d.year))]
+            groups = [...new Set(data.map(d => d.year))]
             // Reformat the data: we need an array of arrays of {x, y} tuples
-            const dataReady = allGroup.map((grpName) => { // .map allows to do something for each element of the list
+            let dataReady = groups.map((grpName) => { // .map allows to do something for each element of the list
                 return {
                     name: grpName,
                     values: data.filter(d => d.year === grpName).map((d) => {
@@ -58,7 +60,7 @@
 
             // A color scale: one color for each group
             const myColor = d3.scaleSequential(d3.interpolateBlues)
-                .domain(d3.extent(allGroup))
+                .domain(d3.extent(groups))
 
             // Add X axis --> it is a date format
             const x = d3.scaleBand()
@@ -86,7 +88,7 @@
 
             // Add the lines
             const line = d3.line()
-                .x(d => x(d.time)+margin.left)
+                .x(d => x(d.time) + margin.left)
                 .y(d => y(d.value))
             svg.selectAll("myLines")
                 .data(dataReady)
@@ -109,7 +111,7 @@
                 .selectAll("myPoints")
                 .data(d => d.values)
                 .join("circle")
-                .attr("cx", d => x(d.time)+margin.left)
+                .attr("cx", d => x(d.time) + margin.left)
                 .attr("cy", d => y(d.value))
                 .attr("r", 3)
                 .attr("stroke", "white")
@@ -136,6 +138,22 @@
                     //d3.selectAll(".c" + d.name).transition().style()
                 })
         })
+
+        function show_all() {
+            if (groups) {
+                for (let i of groups) {
+                    d3.selectAll(".c" + i).transition().style("opacity", 1)
+                }
+            }
+        }
+
+        function hide_all() {
+            if (groups) {
+                for (let i of groups) {
+                    d3.selectAll(".c" + i).transition().style("opacity", 0)
+                }
+            }
+        }
     </script>
 </footer>
 </html>

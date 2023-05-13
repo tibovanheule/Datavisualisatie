@@ -38,9 +38,6 @@
         width = 920 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
-    const min_date = "2011-01-01";
-    const max_date = "2011-04-30";
-
     const lunar_data_future = d3.csv('/data/luna.csv', d3.autoType);
     const getij_data = await d3.csv(`/data/min_max_getij_blk.csv`, d3.autoType);
     const high_tide = getij_data.filter(d => d.value > 250);
@@ -146,7 +143,7 @@
     svg.call(zoom)
         .transition()
         .duration(250)
-        .call(zoom.scaleTo, 4, [x_scale(Date.UTC(2012, 1, 15)), 0]);
+        .call(zoom.scaleTo, 16, [x_scale(Date.UTC(2015, 7, 1)), 0]);
 
     const moon_emoji = {0: "🌕", 10: "🌗", 20: "🌑", 30: "🌓"};
     const lunar_data = await lunar_data_future.then(d => d.filter(d => d.date >= datum_extent[0] && d.date <= datum_extent[1]));

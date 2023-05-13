@@ -12,7 +12,7 @@
     <meta name="msapplication-config" content="./files/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
     <style>
-        body{background:#f5f5f5 url(./files/background-pattern.png);color:#222;cursor:auto;font-family:flanders,Helvetica,Roboto,Arial,sans-serif;font-style:normal;font-weight:400;line-height:1.5;margin:0;padding:0;position:relative}
+        body{background:#f5f5f5 url(./background-pattern.png);color:#222;cursor:auto;font-family:flanders,Helvetica,Roboto,Arial,sans-serif;font-style:normal;font-weight:400;line-height:1.5;margin:0;padding:0;position:relative}
         .modal {background-color: #eceeef;text-align: center; border-radius: 4px;margin: 2% 0; width: 98%;padding:1%}
         .content {width: 70vw;margin: 2% 15vw;}
         .orange { background-color: #c2b049;color: white;}
@@ -23,17 +23,34 @@
     </style>
 </head>
 <body>
-<img src="./files/logo.png" style="margin: 2% auto;width: 20vw;display: block;"/>
+<img src="./logo.png" style="margin: 2% auto;width: 20vw;display: block;" alt="logo"/>
 
 <div class="content">
     <div class="modal orange">
         <h1>Hydro Meteo Atlas Geanalyseerd</h1>
     </div>
-    <div class="modal">
-        <iframe src="./locations.html" title="Getijden"></iframe>
+    <div class="modal orange">
+        <h3>Meetnet vlaamse banken, wat is het?</h3>
     </div>
     <div class="modal">
-        <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Omnis laborum corporis doloribus, hic labore illum fuga animi assumenda perferendis nesciunt modi voluptate ipsum esse ab accusamus ipsa eaque natus doloremque.</p>
+        <iframe src="./locations.html" title="Getijden" height="450px"></iframe>
+    </div>
+    <div class="modal" style="text-align: left">
+        <p>
+            De meetpalen en boeien op zee zijn uitgerust met geavanceerde sensoren en meettoestellen.
+Die verzamelen belangrijke gegevens zoals windsnelheid en -richting, zichtbaarheid, temperatuur, getij, golfhoogte en -richting.
+De getijstations, meteoparken en meetlocaties langs de kust meten daar de: wind, getij, stroming,verschillende andere meteoparameters.
+Alle data van het meetnet komt via een computernetwerk in het datacenter in Oostende terecht. Van daaruit wordt het verdeeld naar de verschillende gebruikers. Het datacenter verwerkt vierentwintig uur per dag en zeven dagen op zeven alle ingewonnen informatie.
+Zeevarenden hebben zo onmiddellijk toegang tot de actuele informatie om hun activiteit veilig te laten verlopen.
+        </p>
+<ul>
+                    <li>6 meetpalen</li>
+                    <li>16 golfmeetboeien</li>
+                    <li>5 getijdestations </li>
+                    <li>3 meteoparken </li>
+                    <li>4 windmeetlocaties aan de kust </li>
+                    <li>3 stroommeetlocaties in de havens</li>
+                </ul>
     </div>
 
     <div class="modal">
@@ -43,7 +60,7 @@
         <iframe src="./wind_en_golven.html" title="Getijden"></iframe>
     </div>
     <div class="modal orange">
-        <h1>klimaat</h1>
+        <h3>klimaat</h3>
     </div>
 </div>
 </body>

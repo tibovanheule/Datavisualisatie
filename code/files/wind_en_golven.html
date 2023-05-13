@@ -106,7 +106,7 @@
 
     const x_scale = d3.scaleTime()
         .domain(datum_extent)
-        .range([margin.left, width + margin.left]);
+        .range([margin.left, width - margin.right]);
 
     const y_wind_scale = d3.scaleLinear()
         .domain([0, wind_extent[1]])

@@ -182,7 +182,7 @@
                     let i = groups[index]
                     setTimeout((index) => {
                         d3.selectAll(".c" + i).transition().style("opacity", 1);
-                        if ((index % 10) !== 0) {
+                        if (((index % 10) !== 0)) {
                             setTimeout(() => {
                                 d3.selectAll(".c" + i).transition().style("opacity", 0)
                             }, 3000);

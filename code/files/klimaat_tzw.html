@@ -8,8 +8,28 @@
     <title>Klimaattrend tzw</title>
     <script src="./js/d3.v6.js"></script>
     <style>
-        #tzw_diep_vs_ondiep > svg:hover {
-            cursor: move;
+
+        button {
+            background-color: rgba(51, 51, 51, 0.05);
+            border-radius: 8px;
+            border-width: 0;
+            color: #333333;
+            cursor: pointer;
+            display: inline-block;
+            font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 20px;
+            list-style: none;
+            margin: 0;
+            padding: 10px 12px;
+            text-align: center;
+            transition: all 200ms;
+            vertical-align: baseline;
+            white-space: nowrap;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
         }
     </style>
     <link rel="apple-touch-icon" sizes="180x180" href="./images/apple-touch-icon.png">
@@ -27,8 +47,8 @@
 <body>
 <button onclick="show_all()">Toon alles</button>
 <button onclick="hide_all()">Verberg alles</button>
+<button onclick="animate_graph()">Animeer</button>
 <div id="tzw_klimaat" style="display: block"></div>
-
 </body>
 <footer>
     <script>
@@ -47,7 +67,7 @@
         d3.csv("./data/klimaat_tzw.csv").then((data) => {
 
             // List of groups (here I have one group per column)
-            groups = [...new Set(data.map(d => d.year))]
+            groups = [...new Set(data.map(d => d.year))].filter((value, index, array) => array.indexOf(value) === index);
             // Reformat the data: we need an array of arrays of {x, y} tuples
             let dataReady = groups.map((grpName) => { // .map allows to do something for each element of the list
                 return {
@@ -151,6 +171,23 @@
             if (groups) {
                 for (let i of groups) {
                     d3.selectAll(".c" + i).transition().style("opacity", 0)
+                }
+            }
+        }
+
+        function animate_graph() {
+            if (groups) {
+                hide_all()
+                for (let index in groups) {
+                    let i = groups[index]
+                    setTimeout((index) => {
+                        d3.selectAll(".c" + i).transition().style("opacity", 1);
+                        if ((index % 10) !== 0) {
+                            setTimeout(() => {
+                                d3.selectAll(".c" + i).transition().style("opacity", 0)
+                            }, 3000);
+                        }
+                    }, 1000 * (index));
                 }
             }
         }

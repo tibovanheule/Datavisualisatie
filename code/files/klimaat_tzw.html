@@ -136,6 +136,23 @@
                 .attr("r", 3)
                 .attr("stroke", "white")
 
+            // Add a label at the end of each line
+            svg
+                .selectAll("myLabels")
+                .data(dataReady)
+                .join('g')
+                .append("text")
+                .attr("class", d => 'c' + d.name.toString())
+                .datum(d => {
+                    return {name: d.name, value: d.values[0]};
+                }) // keep only the last value of each time series
+                .attr("transform", d => `translate(${x(d.value.time)},${y(d.value.value)})`) // Put the text at the position of the last point
+                //.attr("x",) // shift the text a bit more right
+                .text(d => d.name)
+                .style("fill", d => myColor(d.name))
+                .style("font-size", ".6em")
+                .style("background-color", "white")
+
             // Add a legend (interactive)
             svg
                 .selectAll("myLegend")
@@ -157,6 +174,12 @@
                     d3.selectAll(".c" + d.name).transition().style("opacity", currentOpacity == 1 ? 0 : 1)
                     //d3.selectAll(".c" + d.name).transition().style()
                 })
+        }).then(() => {
+            for (let i in groups) {
+                if (i % 5 !== 0) {
+                    d3.selectAll(".c" + groups[i]).transition().style("opacity", 0)
+                }
+            }
         })
 
         function show_all() {

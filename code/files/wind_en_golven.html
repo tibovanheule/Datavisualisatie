@@ -316,7 +316,6 @@
         hover_elements.append("text")
             .attr("id", "wind-text")
             .attr("class", "value-text")
-            .attr("fill", wind_color)
             .attr("x", xz(windkracht.datum))
             .attr("y", y_wind_scale(windkracht.value))
             .text(windkracht.value + "m/s");
@@ -331,7 +330,6 @@
         hover_elements.append("text")
             .attr("id", "golf-text")
             .attr("class", "value-text")
-            .attr("fill", water_color)
             .attr("x", xz(golfhoogte.datum))
             .attr("y", y_golf_scale(golfhoogte.value))
             .text(golfhoogte.value + "cm");

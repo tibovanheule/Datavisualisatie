@@ -271,7 +271,6 @@
         hover_elements.select("#x-axis-line").attr("x", pointer[0]);
         hover_elements.select("#datum-text").attr("x", pointer[0]).text(hoveredDate.toLocaleString());
         const {datum_low, value_low, datum_high, value_high} = binarySearch(tides, d => d.datum_low.addHours(-3), hoveredDate);
-        console.log({datum_low, value_low, datum_high, value_high});
         hover_elements.selectAll("#neap-tide")
             .attr("cx", xz(datum_low))
             .attr("cy", y_scale(value_low));

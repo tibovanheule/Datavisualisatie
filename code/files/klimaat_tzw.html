@@ -48,6 +48,7 @@
 <button onclick="show_all()">Toon alles</button>
 <button onclick="hide_all()">Verberg alles</button>
 <button onclick="animate_graph()">Animeer</button>
+<button onclick="begin()">Reset</button>
 <div id="tzw_klimaat" style="display: block"></div>
 </body>
 <footer>
@@ -175,12 +176,18 @@
                     //d3.selectAll(".c" + d.name).transition().style()
                 })
         }).then(() => {
+            begin()
+        })
+
+        function begin() {
             for (let i in groups) {
                 if (i % 5 !== 0) {
                     d3.selectAll(".c" + groups[i]).transition().style("opacity", 0)
+                } else {
+                    d3.selectAll(".c" + groups[i]).transition().style("opacity", 1)
                 }
             }
-        })
+        }
 
         function show_all() {
             if (groups) {

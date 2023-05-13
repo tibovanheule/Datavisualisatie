@@ -272,7 +272,7 @@
         .duration(250)
         .call(zoom.scaleTo, 16, [x_scale(Date.UTC(2015, 11, 8)), 0]);
 
-    var xz;
+    var xz = x_scale;
     function zoomed(event) {
         xz = event.transform.rescaleX(x_scale);
         wind_path.attr("d", line(windsnelheden, xz, y_wind_scale));
@@ -300,8 +300,12 @@
             .attr("y", height + margin.top - 3)
             .attr("text-anchor", "middle")
             .text(hoveredDate.toLocaleString());
+
         const windkracht = binarySearch(windsnelheden, d=>d.datum, hoveredDate);
         const golfhoogte = binarySearch(golfhoogtes, d=>d.datum, hoveredDate);
+        const wrichting = binarySearch(windrichting, d=>d.datum, hoveredDate);
+        const grichting = binarySearch(golfrichting, d=>d.datum, hoveredDate);
+
         hover_elements.append("circle")
             .attr("id", "wind")
             .attr("class", "value")
@@ -316,6 +320,7 @@
             .attr("x", xz(windkracht.datum))
             .attr("y", y_wind_scale(windkracht.value))
             .text(windkracht.value + "m/s");
+
         hover_elements.append("circle")
             .attr("id", "golf")
             .attr("class", "value")
@@ -330,6 +335,29 @@
             .attr("x", xz(golfhoogte.datum))
             .attr("y", y_golf_scale(golfhoogte.value))
             .text(golfhoogte.value + "cm");
+        
+        const richtingen = hover_elements.append("g")
+            .attr("id", "richtingen")
+            .attr("transform", `translate(${xz(wrichting.datum)},20)`);
+        richtingen.append("circle")
+            .attr("class", "dotted")
+            .attr("r", 10)
+            .attr("style", "fill: white")
+            .attr("transform", "translate(0, 7)");
+        richtingen.append("polygon")
+            .attr("id", "windrichting")
+            .attr("class", "arrow")
+            .attr("points", "0 0, 5 15, 0 10, -5 15, 0 0")
+            .attr("stroke", wind_color)
+            .attr("fill", "none")
+            .attr("transform", `rotate(${wrichting.value}, 0, 7.5)`);
+        richtingen.append("polygon")
+            .attr("id", "golfrichting")
+            .attr("class", "arrow")
+            .attr("points", "0 0, 5 15, 0 10, -5 15, 0 0")
+            .attr("fill", water_color)
+            .attr("stroke", "none")
+            .attr("transform", `rotate(${grichting.value}, 0, 7.5)`);
     }
 
     function onMouseMove(e) {
@@ -339,6 +367,8 @@
         hover_elements.select("#datum-text").attr("x", pointer[0]).text(hoveredDate.toLocaleString());
         const windkracht = binarySearch(windsnelheden, d=>d.datum, hoveredDate);
         const golfhoogte = binarySearch(golfhoogtes, d=>d.datum, hoveredDate);
+        const wrichting = binarySearch(windrichting, d=>d.datum, hoveredDate);
+        const grichting = binarySearch(golfrichting, d=>d.datum, hoveredDate);
         hover_elements.selectAll("#wind")
             .attr("cx", xz(windkracht.datum))
             .attr("cy", y_wind_scale(windkracht.value));
@@ -353,6 +383,9 @@
             .attr("x", xz(golfhoogte.datum))
             .attr("y", y_golf_scale(golfhoogte.value))
             .text(golfhoogte.value + "cm");
+        hover_elements.select("#richtingen").attr("transform", `translate(${xz(wrichting.datum)},20)`);
+        hover_elements.select("#windrichting").attr("transform", `rotate(${wrichting.value}, 0, 7.5)`);
+        hover_elements.select("#golfrichting").attr("transform", `rotate(${grichting.value}, 0, 7.5)`);
     }
 
     function onMouseLeave(e) {

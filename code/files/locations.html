@@ -11,8 +11,8 @@
     <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
             integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
             crossorigin=""></script>
-    <link rel="stylesheet" href="MarkerCluster.css"/>
-    <script type="application/javascript" src="leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="./css/MarkerCluster.css"/>
+    <script type="application/javascript" src="./js/leaflet.markercluster.js"></script>
     <style>
         #mapid {
             height: 100vh;
@@ -53,13 +53,13 @@
         }
 
     </style>
-    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
-    <link rel="manifest" href="./site.webmanifest">
-    <link rel="shortcut icon" href="./favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="./images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon-16x16.png">
+    <link rel="manifest" href="./images/site.webmanifest">
+    <link rel="shortcut icon" href="./images/favicon.ico">
     <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-config" content="browserconfig.xml">
+    <meta name="msapplication-config" content="./images/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
     <title>Locaties</title>
 </head>
@@ -72,11 +72,11 @@
     <script type="module">
         const buoyIcon = (name) => new L.DivIcon({
             className: 'my-div-icon',
-            html: `<img class="bouy" src="buoy.png"/><span class="bouy-text">${name}</span>`,
+            html: `<img class="bouy" src="./images/buoy.png"/><span class="bouy-text">${name}</span>`,
             iconSize: L.point(40, 40)
         });
 
-        const data = await fetch("/api/locations").then((d) => d.json());
+        const data = await fetch("./data/locations.json").then((d) => d.json());
         // mapid is the id of the div where the map will appear
         const map = L
             .map('mapid')

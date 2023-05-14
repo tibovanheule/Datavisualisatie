@@ -84,7 +84,7 @@
 
             // A color scale: one color for each group
             const myColor = d3.scaleSequential(d3.interpolateBlues)
-                .domain(d3.extent(groups))
+                .domain([0,groups.length +10])
 
             // Add X axis --> it is a date format
             const x = d3.scaleBand()
@@ -126,9 +126,9 @@
                 .join("path")
                 .attr("class", d => 'c' + d.name.toString())
                 .attr("d", d => line(d.values))
-                .attr("stroke", d => myColor(d.name))
+                .attr("stroke", d => myColor(groups.indexOf(d.name)+10))
                 .style("stroke-width", 2)
-                .style("fill", "none")
+                .style("fill", "none");
 
             // Add the points
             svg
@@ -136,7 +136,7 @@
                 .selectAll("myDots")
                 .data(dataReady)
                 .join('g')
-                .style("fill", d => myColor(d.name))
+                .style("fill", d => myColor(groups.indexOf(d.name)+10))
                 .attr("class", d => 'c' + d.name.toString())
                 // Second we need to enter in the 'values' part of this group
                 .selectAll("myPoints")
@@ -160,7 +160,7 @@
                 .attr("transform", d => `translate(${x(d.value.time)},${y(d.value.value)})`) // Put the text at the position of the last point
                 //.attr("x",) // shift the text a bit more right
                 .text(d => d.name)
-                .style("fill", d => myColor(d.name))
+                .style("fill", d => myColor(groups.indexOf(d.name)+5))
                 .style("font-size", ".6em")
                 .style("background-color", "white")
 
@@ -176,7 +176,7 @@
                 })
                 .attr('class', d => "label" + d.name)
                 .text(d => d.name)
-                .style("fill", d => myColor(d.name))
+                .style("fill", d => myColor(groups.indexOf(d.name)+10))
                 .style("font-size", 10)
                 .on("click", function (event, d) {
                     // is the element currently visible ?
@@ -189,8 +189,10 @@
             const hover_elements = svg.append("g");
 
             function onMouseEnter(e) {
-                const pointer = d3.pointer(e);
-                const hoveredDate = x.invert(pointer[0]);
+                // get x value of mouse
+                const pointer = d3.pointer(e)[0];
+                console.log(pointer)
+                //const hoveredDate = x.invert(pointer); // doesn't  work with scqlebqnd
                 hover_elements.append("rect")
                     .attr("id", "x-axis-line")
                     .attr("class", "dotted")
@@ -207,13 +209,6 @@
                     .attr("text-anchor", "middle")
                     .text(hoveredDate);
                 /*
-                        hover_elements.append("circle")
-                            .attr("id", "wind")
-                            .attr("class", "value")
-                            .attr("fill", wind_color)
-                            .attr("r", "3px")
-                            .attr("cx", xz(windkracht.datum))
-                            .attr("cy", y_wind_scale(windkracht.value));
                         hover_elements.append("text")
                             .attr("id", "wind-text")
                             .attr("class", "value-text")

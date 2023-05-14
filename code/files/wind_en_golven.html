@@ -272,7 +272,7 @@
         .duration(250)
         .call(zoom.scaleTo, 16, [x_scale(Date.UTC(2015, 11, 8)), 0]);
 
-    var xz = x_scale;
+    let xz = x_scale;
     function zoomed(event) {
         xz = event.transform.rescaleX(x_scale);
         wind_path.attr("d", line(windsnelheden, xz, y_wind_scale));

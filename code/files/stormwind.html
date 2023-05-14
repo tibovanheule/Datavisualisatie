@@ -13,6 +13,15 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-config" content="/files/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
+    <style>
+        .stormnamen text {
+            font-size: .6rem;
+            paint-order: stroke;
+            stroke:#FFFFFF;
+            stroke-width: 1px;
+            opacity: .75;
+        }
+    </style>
     <script>
         let uid_count = 0;
 
@@ -42,8 +51,12 @@
 
 
     const lunar_data_future = d3.csv('/data/luna.csv', d3.autoType);
-    const wind_data = (await Promise.all([d3.csv('/data/124_4.csv', d3.autoType), d3.csv('/data/118_4.csv', d3.autoType)])).flat(1).sort((a, b) => a.datum - b.datum);
-    const getij_data = await d3.csv(`/data/min_max_getij_mp7.csv`, d3.autoType);
+    const [wind_data, getij_data, stormnamen] = await Promise.all([
+        //Promise.all([d3.csv('/data/124_4.csv', d3.autoType), d3.csv('/data/118_4.csv', d3.autoType)]).then(d => d.flat(1).sort((a, b) => a.datum - b.datum).filter((d,i)=>i%4==0)),
+        d3.csv('/data/124_4.csv', d3.autoType),
+        d3.csv(`/data/min_max_getij_mp7.csv`, d3.autoType),
+        d3.csv('/data/stormen.csv', d3.autoType)
+    ]);
     const high_tide = getij_data.filter(d => d.value > 250);
     const neap_tide = getij_data.filter(d => d.value < 250);
     const tides = neap_tide.map((e, i) => {
@@ -55,13 +68,13 @@
         };
     })
 
-    const datum_extent = d3.extent(getij_data, d => d.datum);
+    const datum_extent = d3.extent(wind_data, d => d.datum);
     const getij_extent = d3.extent(getij_data, d => d.value);
     const wind_extent = d3.extent(wind_data, d => d.value);
 
     const x_scale = d3.scaleTime()
         .domain(datum_extent)
-        .range([margin.left, width + margin.left]);
+        .range([margin.left, width - margin.right]);
 
     const getij_y_scale = d3.scaleLinear()
         .domain(getij_extent)
@@ -114,7 +127,7 @@
         (data);
 
     const zoom = d3.zoom()
-        .scaleExtent([1, 32])
+        .scaleExtent([1, 50])
         .extent([[margin.left, 0], [width - margin.right, height]])
         .translateExtent([[margin.left, -Infinity], [width - margin.right, Infinity]])
         .on("zoom", zoomed);
@@ -187,10 +200,24 @@
         .attr("fill", wind_color)
         .text("Windsnelheid (m/s)");
 
+    const stormen = svg.append("g").attr("clip-path", clip).attr("class", "stormnamen");
+    const storms = (d, x) => {
+        stormen.selectAll("text").remove();
+        stormen.selectAll("text")
+            .data(stormnamen)
+            .enter()
+            .append("text")
+            .attr("x", d=> x(d.datum))
+            .attr("y", margin.top + 25)
+            .attr("text-anchor", "middle")
+            .text(d=>d.naam);
+    }
+    storms(stormnamen, x_scale);
+
     svg.call(zoom)
         .transition()
         .duration(250)
-        .call(zoom.scaleTo, 18, [x_scale(Date.UTC(2013, 12, 6)), 0]);
+        .call(zoom.scaleTo, 28, [x_scale(Date.UTC(2020, 12, 20)), 0]);
 
     const moon_emoji = {0: "🌕", 10: "🌗", 20: "🌑", 30: "🌓"};
     const lunar_data = await lunar_data_future.then(d => d.filter(d => d.date >= datum_extent[0] && d.date <= datum_extent[1]));
@@ -213,6 +240,7 @@
         wind_path.attr("d", line(wind_data, xz, wind_y_scale))
         gx.call(x_axis, xz);
         lunas(lunar_data, xz)
+        storms(stormnamen, xz);
     }
 </script>
 </body>

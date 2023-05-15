@@ -71,7 +71,7 @@
                 .on("mousemove", onMouseMove)
                 .on("mouseleave", onMouseLeave);
             // List of groups (here I have one group per column)
-            groups = [...new Set(data.map(d => d.year))].filter((value, index, array) => array.indexOf(value) === index);
+            groups = data.map(d => d.year).filter((value, index, array) => array.indexOf(value) === index);
             // Reformat the data: we need an array of arrays of {x, y} tuples
             let dataReady = groups.map((grpName) => { // .map allows to do something for each element of the list
                 return {

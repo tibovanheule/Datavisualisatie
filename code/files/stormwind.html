@@ -156,6 +156,7 @@
         .attr("clip-path", clip)
         .attr("stroke", wind_color)
         .attr("fill", "none")
+        .attr("opacity", 0.65)
         .attr("d", line(wind_data, x_scale, wind_y_scale));
 
     const gx = svg.append("g")

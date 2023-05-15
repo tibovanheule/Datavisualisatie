@@ -3,7 +3,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        
+
         .coeff .dot {
             fill: hsla(207, 63%, 27%, 0.2);
         }
@@ -61,15 +61,11 @@
 <script>
     (function () {
         fetch("./data/result.json").then((d) => d.json()).then((data_r) => {
-            data_r = data_r.data_r
+            let data_ = data_r.ori
             let pi = Math.PI
             let tweepi = 2 * Math.PI
 
-            let types = {
-                square: function (n) {
-                    return data_r[n % data_r.length] / 10;
-                }
-            };
+            let get_coef = (n) => data_[n % data_.length] / 600;
 
             function FT(A, N, gamme) {
                 gamme = gamme || 0;
@@ -84,31 +80,28 @@
 
             let
                 margin = {top: 40, right: 100, bottom: 40, left: 150},
-                W = 960,
-                H = 500,
-                w = W - margin.left - margin.right,
-                h = H - margin.top - margin.bottom,
+                width = 960,
+                height = 500,
 
-                radius = 140,
+                radius = 30,
                 theta = 0,
                 xmax = 1.5,
-                rate = 1 / 60,
+                rate = 1 / 60,// speed
 
                 tDomain = d3.range(0, 1.1, 1 / 1000),   // trace domain
                 gDomain = d3.range(0, xmax, xmax / 1000), // graph domain
 
-                C = types.square, // coeffiecients
-                L = 6,            // size
-                F = .6,          // frequence
+                L = 50,            // size
+                F = .3,          // frequence
 
-                yCirc = d3.scaleLinear().domain([-1, 1]).range([h / 2 + radius, h / 2 - radius]),
+                yCirc = d3.scaleLinear().domain([-1, 1]).range([height / 2 + radius, height / 2 - radius]),
                 xCirc = d3.scaleLinear().domain([-1, 1]).range([0, 2 * radius]),
                 rAxis = d3.scaleLinear().domain([0, 1]).range([0, radius]),
-                xAxis = d3.scaleLinear().range([radius, W - margin.left]),
+                xAxis = d3.scaleLinear().range([radius, width - margin.left]),
 
                 Fxy, fx, fy,
 
-                draw, timer, data = [];
+                timer, data = [];
 
             let graph = d3.line()
                 .x(function (d) {
@@ -144,17 +137,17 @@
 
             let svg = d3.select("body")
                 .append("svg")
-                .attr("viewBox", [0, 0, W, H + margin.top + margin.bottom])
+                .attr("viewBox", [0, 0, width, height + margin.top + margin.bottom])
 
             svg.append("line")
                 .attr("class", "axis")
                 .attr("y1", margin.top + yCirc(0)).attr("x1", 0)
-                .attr("y2", margin.top + yCirc(0)).attr("x2", W);
+                .attr("y2", margin.top + yCirc(0)).attr("x2", width);
 
             svg.append("line")
                 .attr("class", "axis")
                 .attr("x1", margin.left + xCirc(0)).attr("y1", 0)
-                .attr("x2", margin.left + xCirc(0)).attr("y2", H);
+                .attr("x2", margin.left + xCirc(0)).attr("y2", height);
 
             let vis = svg.append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -164,19 +157,13 @@
             let pPath = vis.append("path").attr("class", "proj");
 
             function cache() {
-                let A;
-                if (typeof C === "function") {
-                    A = d3.range(1, L + 1).map(C);
-                } else {
-                    A = C.slice(0, L);
-                }
+                let A = d3.range(1, L + 1).map(get_coef);
 
                 fx = FT(A, L - 1, pi / 2);
-                fy = FT(A, L - 1, 0),
-
-                    Fxy = A.map(function (a, i) {
-                        return {X: FT(A, i, pi / 2), Y: FT(A, i, 0), r: Math.abs(a)};
-                    });
+                fy = FT(A, L - 1, 0)
+                Fxy = A.map(function (a, i) {
+                    return {X: FT(A, i, pi / 2), Y: FT(A, i, 0), r: Math.abs(a)};
+                });
             }
 
             function calc() {

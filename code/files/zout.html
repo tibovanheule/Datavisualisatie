@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:;base64,=">
+    <title>Zout gehalte trend klimaat</title>
+    <script src="./js/d3.v6.js"></script>
+    <style>
+
+        button {
+            background-color: rgba(51, 51, 51, 0.05);
+            border-radius: 8px;
+            border-width: 0;
+            color: #333333;
+            cursor: pointer;
+            display: inline-block;
+            font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 20px;
+            list-style: none;
+            margin: 0;
+            padding: 10px 12px;
+            text-align: center;
+            transition: all 200ms;
+            vertical-align: baseline;
+            white-space: nowrap;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+    </style>
+    <link rel="apple-touch-icon" sizes="180x180" href="./images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon-16x16.png">
+    <link rel="manifest" href="./images/site.webmanifest">
+    <link rel="shortcut icon" href="./images/favicon.ico">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-config" content="./images/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <script src="https://cdn.jsdelivr.net/npm/d3-color@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-interpolate@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-scale-chromatic@3"></script>
+</head>
+<body>
+<button onclick="show_all()">Toon alles</button>
+<button onclick="hide_all()">Verberg alles</button>
+<button onclick="animate_graph()">Animeer</button>
+<button onclick="begin()">Reset</button>
+<div id="zout_klimaat" style="display: block"></div>
+</body>
+<footer>
+    <script>
+        // set the dimensions and margins of the graph
+        const margin = {top: 60, right: 20, bottom: 20, left: 50},
+            width = 920 - margin.left - margin.right,
+            height = 400 - margin.top - margin.bottom;
+
+
+        let groups = undefined;
+        const months_sordted = ["", "januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"]
+        //Read the data
+        d3.csv("./data/zoutgehalte.csv").then((data) => {
+            // append the svg object to the body of the page
+            const svg = d3.select("#zout_klimaat")
+                .append("svg")
+                .attr("viewBox", [0, 0, width, height + margin.top + margin.bottom])
+                .on("mouseenter", onMouseEnter)
+                .on("mousemove", onMouseMove)
+                .on("mouseleave", onMouseLeave);
+            // List of groups (here I have one group per column)
+            groups = data.map(d => d.year).filter((value, index, array) => array.indexOf(value) === index);
+            // Reformat the data: we need an array of arrays of {x, y} tuples
+            let dataReady = groups.map((grpName) => { // .map allows to do something for each element of the list
+                return {
+                    name: grpName,
+                    values: data.filter(d => d.year === grpName).map((d) => {
+                        return {time: d.month, value: d.value};
+                    })
+                };
+            });
+
+            // A color scale: one color for each group
+            const myColor = d3.scaleSequential(d3.interpolateViridis)
+                .domain(d3.extent(groups))
+
+            // Add X axis --> it is a date format
+            const x = d3.scaleBand()
+                .domain(data.map(d => d.month).sort(function (a, b) {
+                        if (a === b) {
+                            return 0;
+                        }
+                        if (months_sordted.indexOf(a) < months_sordted.indexOf(b)) {
+                            return -1;
+                        }
+                        return 1;
+                    }
+                ))
+                .range([margin.left, width - margin.left]);
+            svg.append("g")
+                .attr("transform", `translate(0, ${height + margin.top})`)
+                .call(d3.axisBottom(x));
+
+            // Add Y axis
+            const y = d3.scaleLinear()
+                .domain(d3.extent(data.map(d => d.value)))
+                .range([height + margin.top, margin.top]);
+            svg.append("g")
+                .attr("transform", `translate(${margin.left}, 0)`)
+                .call(d3.axisLeft(y).ticks(null, "s"))
+                .call(g => g.select(".domain").remove())
+                .call(g => g.select(".tick:last-of-type text").clone()
+                    .attr("x", 3)
+                    .attr("text-anchor", "start")
+                    .attr("font-weight", "bold")
+                );
+            svg.append("text")
+                .attr("class", "y label")
+                .attr("text-anchor", "end")
+                .attr("x", -height / 2)
+                .attr("y", margin.left / 2 - 12)
+                .attr("dy", ".75em")
+                .attr("transform", "rotate(-90)")
+                .attr("text-anchor", "middle")
+                .attr("style", `font-size: 0.8em`)
+                .text("Saliniteit (zoutgehalte)");
+
+            // Add the lines
+            const line = d3.line()
+                .x(d => x(d.time) + margin.left)
+                .y(d => y(d.value))
+            svg.selectAll("myLines")
+                .data(dataReady)
+                .join("path")
+                .attr("class", d => 'c' + d.name.toString())
+                .attr("d", d => line(d.values))
+                .attr("stroke", d => myColor(d.name))
+                .style("stroke-width", 2)
+                .style("fill", "none");
+
+            // Add the points
+            svg
+                // First we need to enter in a group
+                .selectAll("myDots")
+                .data(dataReady)
+                .join('g')
+                .style("fill", d => myColor(d.name))
+                .attr("class", d => 'c' + d.name.toString())
+                // Second we need to enter in the 'values' part of this group
+                .selectAll("myPoints")
+                .data(d => d.values)
+                .join("circle")
+                .attr("cx", d => x(d.time) + margin.left)
+                .attr("cy", d => y(d.value))
+                .attr("r", 3)
+                .attr("stroke", "white")
+
+            // Add a label at the end of each line
+            svg
+                .selectAll("myLabels")
+                .data(dataReady)
+                .join('g')
+                .append("text")
+                .attr("class", d => 'c' + d.name.toString())
+                .datum(d => {
+                    return {name: d.name, value: d.values[0]};
+                }) // keep only the last value of each time series
+                .attr("transform", d => `translate(${x(d.value.time)},${y(d.value.value)})`) // Put the text at the position of the last point
+                //.attr("x",) // shift the text a bit more right
+                .text(d => d.name)
+                .style("fill", d => myColor(d.name))
+                .style("font-size", ".6em")
+                .style("background-color", "white")
+
+            // Add a legend (interactive)
+            svg
+                .selectAll("myLegend")
+                .data(dataReady)
+                .join('g')
+                .append("text")
+                .attr('x', (_, i) => margin.left + 5 + (i % 15) * 40)
+                .attr('y', (_, i) => {
+                    return 30 + Math.floor(i / 15) * 30
+                })
+                .attr('class', d => "label" + d.name)
+                .text(d => d.name)
+                .style("fill", d => myColor(d.name))
+                .style("font-size", 10)
+                .on("click", function (event, d) {
+                    // is the element currently visible ?
+                    let currentOpacity = d3.selectAll(".c" + d.name).style("opacity")
+                    // Change the opacity: from 0 to 1 or from 1 to 0
+                    d3.selectAll(".c" + d.name).transition().style("opacity", currentOpacity == 1 ? 0 : 1)
+                    //d3.selectAll(".c" + d.name).transition().style()
+                })
+
+            const hover_elements = svg.append("g");
+
+            function onMouseEnter(e) {
+                // get x value of mouse
+                const pointer = d3.pointer(e)[0];
+                /*console.log(pointer)
+                //const hoveredDate = x.invert(pointer); // doesn't  work with scqlebqnd
+                hover_elements.append("rect")
+                    .attr("id", "x-axis-line")
+                    .attr("class", "dotted")
+                    .attr("stroke-width", "1px")
+                    .attr("width", ".5px")
+                    .attr("height", height)
+                    .attr("x", pointer[0])
+                    .attr("y", margin.top);
+                hover_elements.append("text")
+                    .attr("id", "datum-text")
+                    .attr("class", "value-text")
+                    .attr("x", pointer[0])
+                    .attr("y", height + margin.top - 3)
+                    .attr("text-anchor", "middle")
+                    .text(hoveredDate);
+
+                        hover_elements.append("text")
+                            .attr("id", "wind-text")
+                            .attr("class", "value-text")
+                            .attr("x", xz(windkracht.datum))
+                            .attr("y", y_wind_scale(windkracht.value))
+                            .text(windkracht.value + "m/s");
+
+                        hover_elements.append("circle")
+                            .attr("id", "golf")
+                            .attr("class", "value")
+                            .attr("fill", water_color)
+                            .attr("r", "3px")
+                            .attr("cx", xz(golfhoogte.datum))
+                            .attr("cy", y_golf_scale(golfhoogte.value));
+                        hover_elements.append("text")
+                            .attr("id", "golf-text")
+                            .attr("class", "value-text")
+                            .attr("x", xz(golfhoogte.datum))
+                            .attr("y", y_golf_scale(golfhoogte.value))
+                            .text(golfhoogte.value + "cm");
+
+                        const richtingen = hover_elements.append("g")
+                            .attr("id", "richtingen")
+                            .attr("transform", `translate(${xz(wrichting.datum)},20)`);
+                        richtingen.append("circle")
+                            .attr("class", "dotted")
+                            .attr("r", 10)
+                            .attr("style", "fill: white")
+                            .attr("transform", "translate(0, 7)");
+                        richtingen.append("polygon")
+                            .attr("id", "windrichting")
+                            .attr("class", "arrow")
+                            .attr("points", "0 0, 5 15, 0 10, -5 15, 0 0")
+                            .attr("stroke", wind_color)
+                            .attr("fill", "none")
+                            .attr("transform", `rotate(${wrichting.value}, 0, 7.5)`);
+                        richtingen.append("polygon")
+                            .attr("id", "golfrichting")
+                            .attr("class", "arrow")
+                            .attr("points", "0 0, 5 15, 0 10, -5 15, 0 0")
+                            .attr("fill", water_color)
+                            .attr("stroke", "none")
+                            .attr("transform", `rotate(${grichting.value}, 0, 7.5)`);
+
+                 */
+            }
+
+            function onMouseMove(e) {
+                const pointer = d3.pointer(e);
+                //const hoveredDate = x.invert(pointer[0]);
+                /*
+                hover_elements.select("#x-axis-line").attr("x", pointer[0]);
+                hover_elements.select("#datum-text").attr("x", pointer[0]).text(hoveredDate.toLocaleString());
+                const windkracht = binarySearch(windsnelheden, d => d.datum, hoveredDate);
+                const golfhoogte = binarySearch(golfhoogtes, d => d.datum, hoveredDate);
+                const wrichting = binarySearch(windrichting, d => d.datum, hoveredDate);
+                const grichting = binarySearch(golfrichting, d => d.datum, hoveredDate);
+                hover_elements.selectAll("#wind")
+                    .attr("cx", x(windkracht.datum))
+                    .attr("cy", y_wind_scale(windkracht.value));
+                hover_elements.selectAll("#golf")
+                    .attr("cx", x(golfhoogte.datum))
+                    .attr("cy", y_golf_scale(golfhoogte.value));
+                hover_elements.selectAll("#wind-text")
+                    .attr("x", x(windkracht.datum))
+                    .attr("y", y_wind_scale(windkracht.value))
+                    .text(windkracht.value + "m/s");
+                hover_elements.selectAll("#golf-text")
+                    .attr("x", x(golfhoogte.datum))
+                    .attr("y", y_golf_scale(golfhoogte.value))
+                    .text(golfhoogte.value + "cm");
+                hover_elements.select("#richtingen").attr("transform", `translate(${x(wrichting.datum)},20)`);
+                hover_elements.select("#windrichting").attr("transform", `rotate(${wrichting.value}, 0, 7.5)`);
+                hover_elements.select("#golfrichting").attr("transform", `rotate(${grichting.value}, 0, 7.5)`);
+
+                 */
+            }
+
+            function onMouseLeave(e) {
+                //hover_elements.selectChildren().remove();
+                //hover_elements.node().childNodes.forEach(node => node.remove()); // Remove stray elements
+            }
+        }).then(() => {
+            begin()
+        })
+
+        function begin() {
+            for (let i in groups) {
+                if (i % 5 !== 0) {
+                    d3.selectAll(".c" + groups[i]).transition().style("opacity", 0)
+                } else {
+                    d3.selectAll(".c" + groups[i]).transition().style("opacity", 1)
+                }
+            }
+        }
+
+        function show_all() {
+            if (groups) {
+                for (let i of groups) {
+                    d3.selectAll(".c" + i).transition().style("opacity", 1)
+                }
+            }
+        }
+
+        function hide_all() {
+            if (groups) {
+                for (let i of groups) {
+                    d3.selectAll(".c" + i).transition().style("opacity", 0)
+                }
+            }
+        }
+
+        function animate_graph() {
+            if (groups) {
+                hide_all()
+                for (let index in groups) {
+                    let i = groups[index]
+                    setTimeout((index) => {
+                        d3.selectAll(".c" + i).transition().style("opacity", 1);
+                        if (((index % 10) !== 0)) {
+                            setTimeout(() => {
+                                d3.selectAll(".c" + i).transition().style("opacity", 0)
+                            }, 3000);
+                        }
+                    }, 1000 * (index));
+                }
+            }
+        }
+    </script>
+</footer>
+</html>

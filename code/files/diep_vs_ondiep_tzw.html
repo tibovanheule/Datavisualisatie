@@ -20,7 +20,7 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-config" content="/files/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
-        <script src="https://cdn.jsdelivr.net/npm/d3-color@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-color@3"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-interpolate@3"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-scale-chromatic@3"></script>
 </head>
@@ -32,7 +32,7 @@
     <script>
 
         // set the dimensions and margins of the graph
-        const margin = {top: 60, right: 20, bottom: 20, left: 30},
+        const margin = {top: 60, right: 20, bottom: 50, left: 50},
             width = 920 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
 
@@ -52,7 +52,7 @@
             const groups = data.map(d => new Date(d.year, d.month - 1));
 
             data = data.map((d) => {
-                return subgroups.map((key)=> {
+                return subgroups.map((key) => {
                     if (key === "Ondiep") {
                         return {group: key, value: d.mean_x, key: new Date(d.year, d.month - 1)};
                     }
@@ -70,7 +70,7 @@
 
             // Add Y axis
             const y = d3.scaleLinear()
-                .domain([0,20])
+                .domain([0, 20])
                 .range([height + margin.top, margin.top]);
             svg.append("g")
                 .attr("transform", `translate(${margin.left}, 0)`)
@@ -84,19 +84,19 @@
 
             // color palette = one color per subgroup
             const color = d3.scaleSequential(d3.interpolateBlues)
-                .domain([0,1])
+                .domain([0, 1])
             // Show the bars
             svg.append("g")
                 .selectAll("rect")
                 .data(data)
                 .join("rect")
-                .attr("class",d=>d.group)
+                .attr("class", d => d.group)
                 .attr("transform", d => `translate(${x(d.key)}, 0)`)
                 .attr("x", d => xSubgroup(d.group))
                 .attr("y", d => y(d.value))
                 .attr("width", xSubgroup.bandwidth())
                 .attr("height", d => height - y(d.value) + margin.top)
-                .attr("fill", d => color((subgroups.indexOf(d.group)+0.6)));
+                .attr("fill", d => color((subgroups.indexOf(d.group) + 0.6)));
 
 
             // Add a legend (interactive)
@@ -108,7 +108,7 @@
                 .attr('x', (d, i) => 30 + i * 60)
                 .attr('y', 30)
                 .text(d => d)
-                .attr("fill", d => color((subgroups.indexOf(d)+0.6)))
+                .attr("fill", d => color((subgroups.indexOf(d) + 0.6)))
                 .style("font-size", 15)
                 .on("click", (event, d) => {
                     // is the element currently visible ?
@@ -117,6 +117,26 @@
                     d3.selectAll("." + d).transition().style("opacity", currentOpacity == 1 ? 0 : 1)
 
                 })
+
+            svg.append("text")
+                .attr("class", "y label")
+                .attr("text-anchor", "end")
+                .attr("x", -height / 2)
+                .attr("y", margin.left / 2 - 12)
+                .attr("dy", ".75em")
+                .attr("transform", "rotate(-90)")
+                .attr("text-anchor", "middle")
+                .attr("style", `font-size: 0.8em`)
+                .text("Temperatuur zeewater");
+
+            svg.append("text")
+                .attr("class", "x label")
+                .attr("text-anchor", "end")
+                .attr("x", width / 2)
+                .attr("y", height + margin.bottom + margin.top)
+                .attr("text-anchor", "middle")
+                .attr("style", "font-size: 0.8em")
+                .text("Datum");
         })
     </script>
 </footer>

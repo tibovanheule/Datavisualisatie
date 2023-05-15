@@ -44,7 +44,7 @@
 
         //Read the data
         d3.csv("./data/diepvsondiep.csv").then(function (data) {
-
+            data = data.filter(d=>d.year<2014)
             // List of subgroups = header of the csv files = soil condition here
             const subgroups = ["Ondiep", "Diep"]
 

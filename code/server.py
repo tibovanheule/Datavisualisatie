@@ -170,10 +170,10 @@ def files(path):
     base_loc = Path("./files")
     if (Path(path)).is_file():
         return send_file(Path(path))
-    files = list(base_loc.glob(path+"*"))
-    print(files)
-    if len(files) >0:
-        return send_file(files[0])
+    files_ = list(base_loc.glob(path+"*"))
+
+    if len(files_) >0:
+        return send_file(files_[0])
     if (base_loc/path).is_dir():
         return send_file(base_loc/path/'index.html')
     return Response(status=404)
